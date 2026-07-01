@@ -1,0 +1,25 @@
+# =============================================================================
+#  Repo "wrapper": contiene solo los launchers (win/, linux/) y la doc.
+#  Los tres repos de las apps son INDEPENDIENTES (cada uno su propio .git) y NO
+#  forman parte de este repo.
+# =============================================================================
+
+# --- Repos de las apps (cada uno es su propio repositorio git) ---------------
+AI-VL-core/
+AI-VL-backend/
+AI-VL-frontend/
+
+# --- Certificados TLS locales -------------------------------------------------
+# Se generan solos en cada máquina/IP con win/run.bat. La clave privada
+# (key.pem) NUNCA debe subirse a git; ademas dependen de la IP, asi que no tiene
+# sentido versionarlos.
+certs/
+
+# --- Basura de SO / editores --------------------------------------------------
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
