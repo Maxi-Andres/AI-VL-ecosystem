@@ -149,11 +149,43 @@ info "Levantando backend HTTPS (:$HTTPS_PORT) sirviendo el frontend ..."
 ) > >(sed -u 's/^/[backend] /') 2>&1 &
 pids+=($!)
 
+MONITOR_URL="https://localhost:$HTTPS_PORT/monitor"
+
+# --- 7) Abrir el MONITOR en el navegador de esta PC --------------------------
+# El monitor espeja lo que ve el celu (video + detecciones) y deja controlar las
+# opciones desde el server, SIN transmitir hasta que toques "Activar". Esperamos
+# a que el backend HTTPS conteste y lo abrimos solo. Best-effort: si no hay
+# navegador/entorno grafico, no pasa nada (la URL igual queda impresa abajo).
+open_browser() {
+    local url="$1"
+    if have xdg-open;        then xdg-open        "$url" >/dev/null 2>&1 &
+    elif have gio;           then gio open        "$url" >/dev/null 2>&1 &
+    elif have sensible-browser; then sensible-browser "$url" >/dev/null 2>&1 &
+    else return 1; fi
+}
+(
+    # Esperar (hasta ~20s) a que el backend responda por HTTPS (cert autofirmado
+    # -> curl -k). Recien ahi abrimos, para no pegarle antes de que levante.
+    for _ in $(seq 1 40); do
+        curl -k -fsS --max-time 2 "https://localhost:$HTTPS_PORT/api/health" >/dev/null 2>&1 && break
+        sleep 0.5
+    done
+    if [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && open_browser "$MONITOR_URL"; then
+        info "Monitor abierto en el navegador: $MONITOR_URL"
+    else
+        warn "No pude abrir el navegador solo. Abri a mano: $MONITOR_URL"
+    fi
+) &
+
 printf '\n'
 ok 'MODO CELULAR LISTO.'
 printf '\n'
 printf "  Desde el celu (misma red/WiFi que la PC), abri:\n"
 printf "        ${C_GRN}https://%s:%s${C_OFF}\n" "$ip" "$HTTPS_PORT"
+printf '\n'
+printf "  En ESTA PC (monitor: ver + controlar lo del celu, sin transmitir\n"
+printf "  hasta tocar 'Activar') se abre solo, o abrilo a mano:\n"
+printf "        ${C_GRN}%s${C_OFF}\n" "$MONITOR_URL"
 printf '\n'
 printf "  El celu va a avisar 'conexion no segura' (cert autofirmado):\n"
 printf "    - Android/Chrome: 'Configuracion avanzada' -> 'Continuar'.\n"
