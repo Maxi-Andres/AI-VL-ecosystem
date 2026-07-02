@@ -1,79 +1,84 @@
-# AI-VL — launchers de Linux
+# AI-VL — Linux launchers
 
-Scripts para instalar y levantar el sistema en Linux (equivalentes de `../win/`).
-El flujo es:
+Scripts to install and run the system on Linux (equivalents of `../win/`). The flow is:
 
 ```
-frontend (celular) → backend (:8443 HTTPS) → iacore (:8001) → Ollama (:11434, modelo)
+frontend (phone) → backend (:8443 HTTPS) → iacore (:8001) → Ollama (:11434, model)
 ```
 
-Los tres repos (`AI-VL-core`, `AI-VL-backend`, `AI-VL-frontend`) van en la carpeta
-padre de esta (la raíz del ecosystem). Los scripts detectan solos la raíz del repo,
-así que podés dejar `linux/` como subcarpeta o mover los `.sh` a la raíz — funcionan
-igual.
+The three repos (`AI-VL-core`, `AI-VL-backend`, `AI-VL-frontend`) go in this folder's
+parent (the ecosystem root). The scripts auto-detect the repo root, so you can keep
+`linux/` as a subfolder or move the `.sh` files to the root — either way works.
 
-## Uso
+## Usage
 
-La primera vez, dales permiso de ejecución:
+The first time, make them executable:
 
 ```bash
 chmod +x linux/install.sh linux/run.sh
 ```
 
-1. **`./linux/install.sh`** — una sola vez (o al cambiar de PC). Instala Python 3 /
-   Bun / Ollama si faltan, crea los venvs, hace `bun install` y baja el modelo de
-   Ollama. No se auto-eleva: instala en tu home y solo pide `sudo` cuando el
-   instalador lo necesita (paquetes de la distro, o el script oficial de Ollama).
+1. **`./linux/install.sh`** — once (or when switching machines). Installs Python 3 /
+   Bun / Ollama if missing, creates the venvs, runs `bun install` and pulls the Ollama
+   model. It does NOT auto-elevate: it installs into your home and only asks for `sudo`
+   when the installer needs it (distro packages, or Ollama's official script).
 
-2. **`./linux/run.sh`** — prende todo en **modo celular (HTTPS)** para usar el
-   teléfono como cámara. Compila el frontend y levanta iacore + backend por HTTPS.
-   Después, desde el celular (misma red/WiFi):
+2. **`./linux/run.sh`** — brings everything up in **phone mode (HTTPS)** so you can use
+   the phone as a camera. It builds the frontend and starts iacore + backend over
+   HTTPS. Then, from the phone (same network/WiFi):
 
    ```
-   https://<IP-de-tu-PC>:8443
+   https://<YOUR-PC-IP>:8443
    ```
 
-   El celu avisa que el certificado no es de confianza (es autofirmado) →
-   *Configuración avanzada → Continuar* (Android) / *Mostrar detalles → visitar
-   el sitio* (iPhone). Después dale permiso de cámara.
+   The phone will warn that the certificate is not trusted (it's self-signed) →
+   *Advanced → Continue* (Android) / *Show details → visit the website* (iPhone).
+   Then grant camera permission.
 
-## Certificado y cambio de IP
+## Live logs
 
-La cámara del navegador exige HTTPS cuando se entra por IP de LAN. Por eso
-`run.sh` genera un **certificado autofirmado** en `../certs/` cuyo SAN incluye la
-IP de tu PC.
+`run.sh` keeps running in the foreground and streams **both services' logs live** to
+the terminal — every request uvicorn handles (GET/POST, who connects, WebSocket
+upgrades, status codes), prefixed with `[iacore]` and `[backend]` so you can tell them
+apart. This is the Linux equivalent of the two console windows on Windows. Press
+`Ctrl+C` to shut both down cleanly.
 
-- **Cambio de IP automático:** en cada corrida, `run.sh` detecta la IP de la placa
-  con gateway por defecto (`ip route get 1.1.1.1`) y la compara con `../certs/ip.txt`.
-  Si cambió, **regenera el certificado solo**. No tenés que hacer nada al moverte de red.
+## Certificate and IP changes
 
-- **Forzar una IP a mano:** si la detección elige la placa equivocada, creá el archivo
-  `../certs/ip.override.txt` con una sola línea que sea la IP que querés usar
-  (p. ej. `192.168.0.7`). Borralo para volver a la detección automática.
+The browser camera requires HTTPS when you connect by LAN IP. That's why `run.sh`
+generates a **self-signed certificate** in `../certs/` whose SAN includes your PC's IP.
 
-Para ver tu IP: `ip addr` o `hostname -I`.
+- **Automatic IP change:** on each run, `run.sh` detects the IP of the interface with
+  the default gateway (`ip route get 1.1.1.1`) and compares it against `../certs/ip.txt`.
+  If it changed, it **regenerates the certificate on its own**. You don't have to do
+  anything when you move between networks.
+
+- **Force an IP manually:** if detection picks the wrong interface, create
+  `../certs/ip.override.txt` with a single line holding the IP you want to use
+  (e.g. `192.168.0.7`). Delete it to go back to automatic detection.
+
+To see your IP: `ip addr` or `hostname -I`.
 
 ## Firewall
 
-`run.sh` intenta abrir el puerto `:8443` con `ufw` o `firewalld` (según la distro),
-lo cual puede pedir `sudo`. Si no tenés ninguno de los dos, se avisa y se sigue: en
-ese caso permití el puerto `8443/tcp` a mano si el celular no conecta.
+`run.sh` tries to open port `:8443` with `ufw` or `firewalld` (depending on the
+distro), which may ask for `sudo`. If you have neither, it warns and continues: in that
+case allow `8443/tcp` manually if the phone can't connect.
 
-## Puertos
+## Ports
 
-| Servicio | Puerto | Notas |
-|----------|--------|-------|
-| iacore   | 8001   | HTTP local (detección YOLO/VLM) |
-| backend  | 8443   | HTTPS (modo celular); sirve el frontend en un solo origen |
-| Ollama   | 11434  | modelo `qwen3-vl:4b-instruct` |
+| Service | Port | Notes |
+|---------|------|-------|
+| iacore  | 8001  | Local HTTP (YOLO/VLM detection) |
+| backend | 8443  | HTTPS (phone mode); serves the frontend on a single origin |
+| Ollama  | 11434 | model `qwen3-vl:4b-instruct` |
 
-## Apagar
+## Shutting down
 
-`Ctrl+C` en la terminal donde corre `run.sh`: apaga iacore y backend juntos.
-Los logs quedan en `../.run-iacore.log` y `../.run-backend.log`.
+`Ctrl+C` in the terminal running `run.sh` shuts iacore and backend down together.
 
-## Si el celular no conecta
+## If the phone won't connect
 
-- Que la PC y el celu estén en la **misma red/WiFi**.
-- Que el puerto `:8443` esté abierto en el firewall (ver arriba).
-- Verificá la IP: si cambió y el cert es viejo, volvé a correr `run.sh` (regenera).
+- Make sure the PC and the phone are on the **same network/WiFi**.
+- Make sure port `:8443` is open in the firewall (see above).
+- Check the IP: if it changed and the cert is stale, run `run.sh` again (it regenerates).

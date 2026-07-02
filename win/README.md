@@ -1,71 +1,70 @@
-# AI-VL — launchers de Windows
+# AI-VL — Windows launchers
 
-Scripts para instalar y levantar el sistema en Windows. El flujo es:
+Scripts to install and bring the system up on Windows. The flow is:
 
 ```
-frontend (celular) → backend (:8000/:8443) → iacore (:8001) → Ollama (:11434, modelo)
+frontend (phone) → backend (:8000/:8443) → iacore (:8001) → Ollama (:11434, model)
 ```
 
-Los tres repos (`AI-VL-core`, `AI-VL-backend`, `AI-VL-frontend`) van en la carpeta
-padre de esta (`win/`). Los scripts detectan solos la raíz del repo, así que
-podés dejar `win/` como subcarpeta o mover los `.bat` a la raíz — funcionan igual.
+The three repos (`AI-VL-core`, `AI-VL-backend`, `AI-VL-frontend`) go in this folder's
+parent (the ecosystem root). The scripts auto-detect the repo root, so you can keep
+`win/` as a subfolder or move the `.bat` files to the root — either way works.
 
-## Uso
+## Usage
 
-1. **`install.bat`** — una sola vez (o al cambiar de PC). Instala Python/Bun/Ollama
-   si faltan, crea los venvs, hace `bun install` y baja el modelo de Ollama.
-   Se auto-eleva a administrador (winget lo necesita).
+1. **`install.bat`** — once (or when switching machines). Installs Python/Bun/Ollama
+   if missing, creates the venvs, runs `bun install` and pulls the Ollama model. It
+   auto-elevates to administrator (winget needs it).
 
-2. **`run.bat`** — prende todo en **modo celular (HTTPS)** para usar el teléfono
-   como cámara. Compila el frontend y levanta iacore + backend por HTTPS.
-   Después, desde el celular (misma red/WiFi):
+2. **`run.bat`** — brings everything up in **phone mode (HTTPS)** so you can use the
+   phone as a camera. It builds the frontend and starts iacore + backend over HTTPS.
+   Then, from the phone (same network/WiFi):
 
    ```
-   https://<IP-de-tu-PC>:8443
+   https://<YOUR-PC-IP>:8443
    ```
 
-   El celu avisa que el certificado no es de confianza (es autofirmado) →
-   *Configuración avanzada → Continuar* (Android) / *Mostrar detalles → visitar
-   el sitio* (iPhone). Después dale permiso de cámara.
+   The phone will warn that the certificate is not trusted (it's self-signed) →
+   *Advanced → Continue* (Android) / *Show details → visit the website* (iPhone).
+   Then grant camera permission.
 
-## Certificado y cambio de IP
+## Certificate and IP changes
 
-La cámara del navegador exige HTTPS cuando se entra por IP de LAN. Por eso
-`run.bat` genera un **certificado autofirmado** en `../certs/` cuyo SAN incluye la
-IP de tu PC.
+The browser camera requires HTTPS when you connect by LAN IP. That's why `run.bat`
+generates a **self-signed certificate** in `../certs/` whose SAN includes your PC's IP.
 
-- **Cambio de IP automático:** en cada corrida, `run.ps1` detecta la IP de la
-  placa de red que tiene gateway (ignora los adaptadores virtuales de VMware/WSL)
-  y la compara con `../certs/ip.txt`. Si cambió, **regenera el certificado solo**.
-  No tenés que hacer nada al moverte de red.
+- **Automatic IP change:** on each run, `run.ps1` detects the IP of the network
+  adapter that has a gateway (it ignores the virtual VMware/WSL adapters) and compares
+  it against `../certs/ip.txt`. If it changed, it **regenerates the certificate on its
+  own**. You don't have to do anything when you move between networks.
 
-- **Forzar una IP a mano:** si la detección elige la placa equivocada (por ejemplo
-  tenés varias placas físicas), creá el archivo:
+- **Force an IP manually:** if detection picks the wrong adapter (for example you have
+  several physical NICs), create the file:
 
   ```
   ../certs/ip.override.txt
   ```
 
-  con una sola línea que sea la IP que querés usar, p. ej. `192.168.0.7`.
-  `run.bat` va a usar esa IP (y regenerar el cert para ella). Borralo para volver
-  a la detección automática.
+  with a single line holding the IP you want to use, e.g. `192.168.0.7`. `run.bat` will
+  use that IP (and regenerate the cert for it). Delete it to go back to automatic
+  detection.
 
-Para ver tu IP: `ipconfig` (campo *Dirección IPv4* de tu adaptador de red).
+To see your IP: `ipconfig` (the *IPv4 Address* field of your network adapter).
 
-## Puertos
+## Ports
 
-| Servicio | Puerto | Notas |
-|----------|--------|-------|
-| iacore   | 8001   | HTTP local (detección YOLO/VLM) |
-| backend  | 8443   | HTTPS (modo celular); sirve el frontend en un solo origen |
-| Ollama   | 11434  | modelo `qwen3-vl:4b-instruct` |
+| Service | Port | Notes |
+|---------|------|-------|
+| iacore  | 8001  | Local HTTP (YOLO/VLM detection) |
+| backend | 8443  | HTTPS (phone mode); serves the frontend on a single origin |
+| Ollama  | 11434 | model `qwen3-vl:4b-instruct` |
 
-## Apagar
+## Shutting down
 
-Cerrá las 2 ventanas que abre `run.bat` (iacore y backend).
+Close the 2 windows that `run.bat` opens (iacore and backend).
 
-## Si el celular no conecta
+## If the phone won't connect
 
-- Que la PC y el celu estén en la **misma red/WiFi**.
-- La regla de Firewall para el `:8443` la crea `run.bat` (por eso pide admin).
-- Verificá la IP: si cambió y el cert es viejo, volvé a correr `run.bat` (regenera).
+- Make sure the PC and the phone are on the **same network/WiFi**.
+- The firewall rule for `:8443` is created by `run.bat` (that's why it needs admin).
+- Check the IP: if it changed and the cert is stale, run `run.bat` again (it regenerates).

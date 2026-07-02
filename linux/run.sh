@@ -115,7 +115,11 @@ fi
 
 # --- 6) Levantar iacore (:8001) y backend HTTPS (:8443) ----------------------
 # En Linux corremos ambos en background y con un trap para que Ctrl+C apague los
-# dos limpiamente (equivalente a "cerrar las 2 ventanas" de Windows).
+# dos limpiamente (equivalente a "cerrar las 2 ventanas" de Windows). La salida
+# de cada servicio (los logs de uvicorn: GET/POST, quien se conecta, etc.) va EN
+# VIVO a esta terminal, prefijada con [iacore]/[backend] para distinguirlos.
+# Truco: `> >(sed ...)` (process substitution) prefija sin romper el PID -> $!
+# sigue siendo el del python, asi el trap puede matarlo; sed corta solo al EOF.
 pids=()
 cleanup() {
     printf '\n'
@@ -126,19 +130,23 @@ cleanup() {
 trap cleanup INT TERM EXIT
 
 info 'Levantando iacore (:8001) ...'
-( cd "$CORE" && exec .venv/bin/python -m uvicorn service:app --host 0.0.0.0 --port 8001 ) \
-    > "$ROOT/.run-iacore.log" 2>&1 &
+(
+    cd "$CORE"
+    export PYTHONUNBUFFERED=1      # que los logs salgan al toque, sin buffering
+    exec .venv/bin/python -m uvicorn service:app --host 0.0.0.0 --port 8001
+) > >(sed -u 's/^/[iacore]  /') 2>&1 &
 pids+=($!)
 
 info "Levantando backend HTTPS (:$HTTPS_PORT) sirviendo el frontend ..."
 (
     cd "$BACKEND"
+    export PYTHONUNBUFFERED=1
     export IACORE_URL="http://localhost:8001"
     export CORS_ORIGINS="*"
     export FRONTEND_DIST="$DIST"
     exec .venv/bin/python -m uvicorn app:app --host 0.0.0.0 --port "$HTTPS_PORT" \
         --ssl-keyfile "$KEY" --ssl-certfile "$CRT"
-) > "$ROOT/.run-backend.log" 2>&1 &
+) > >(sed -u 's/^/[backend] /') 2>&1 &
 pids+=($!)
 
 printf '\n'
@@ -152,8 +160,8 @@ printf "    - Android/Chrome: 'Configuracion avanzada' -> 'Continuar'.\n"
 printf "    - iPhone/Safari:  'Mostrar detalles' -> 'visitar este sitio web'.\n"
 printf '\n'
 printf "  Requisitos: PC y celu en la MISMA red; y darle permiso de camara al abrir.\n"
-printf "  Logs: %s , %s\n" "$ROOT/.run-iacore.log" "$ROOT/.run-backend.log"
-printf "  Para apagar: Ctrl+C aca.\n"
+printf "  Abajo salen EN VIVO los logs de cada servicio (GET/POST, conexiones),\n"
+printf "  prefijados con [iacore] / [backend]. Para apagar todo: Ctrl+C aca.\n"
 printf '\n'
 
 # Esperar a los procesos; si uno muere, el trap limpia el otro.
