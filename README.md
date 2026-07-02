@@ -71,3 +71,56 @@ git clone https://github.com/Maxi-Andres/AI-VL-frontend.git  AI-VL-frontend
 Both install whatever is missing (Python, Bun, Ollama), build the venvs, compile the
 frontend and bring everything up in **phone mode (HTTPS)** so you can use the phone as
 a camera. The launchers **do not touch git**: they respect each repo's branch/commit.
+
+## Code intelligence (MCP) — optional, for developers
+
+This repo ships a [`codebase-memory-mcp`](https://github.com/DeusData/codebase-memory-mcp)
+server (see `.mcp.json`): a **local** MCP server that indexes the code into a persistent
+knowledge graph (functions, call chains, HTTP routes and **cross-repo links**) so an AI
+coding agent (Claude Code, etc.) can reason about the four repos as one system — e.g.
+trace the backend's HTTP call all the way into iacore's route. It runs 100% locally, no
+API keys, no telemetry.
+
+### Setup after cloning (each developer, each machine)
+
+The `.mcp.json` is committed, but **the graph itself is not** — the index lives in
+`~/.cache/codebase-memory-mcp/` on your machine. So after cloning you must **install the
+binary and index the repos yourself**:
+
+1. **Install the binary** (once per machine). It lands in `~/.local/bin`; `--skip-config`
+   avoids a duplicate global entry since this repo already ships `.mcp.json`:
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash -s -- --ui --skip-config
+   ```
+   Make sure `~/.local/bin` is on your `PATH` (the installer warns if it isn't).
+
+2. **Open Claude Code in this folder.** Because `.mcp.json` is project-scoped, Claude
+   Code asks you to **approve** the server the first time — accept it. Check with `/mcp`
+   that `codebase-memory-mcp` shows **connected**.
+
+3. **Index the four repos** (once). Just tell Claude *"index the four repos"* (it calls
+   the `index_repository` tool), or do it from the shell:
+   ```bash
+   for r in . AI-VL-core AI-VL-backend AI-VL-frontend; do
+     codebase-memory-mcp cli index_repository "{\"repo_path\":\"$(cd "$r" && pwd)\"}"
+   done
+   ```
+
+### How to use it
+
+Once the server is connected, **you don't call anything by hand** — just chat with
+Claude normally and it uses the graph tools (`search_graph`, `trace_path`,
+`get_architecture`, `detect_changes`, …) whenever they help. Optional: the 3D graph UI
+is served at **http://localhost:9749** while Claude Code is running (enabled by
+`--ui=true` in `.mcp.json`).
+
+### Re-indexing when the code changes
+
+The graph is a **snapshot**, so re-index after meaningful code changes to keep it fresh.
+Re-indexing is **incremental** (it hashes files and only reprocesses what changed), so
+it's cheap — just run `index_repository` again on the repo you touched (or ask Claude to
+"re-index AI-VL-backend"). To make the server refresh automatically instead:
+```bash
+codebase-memory-mcp config set auto_index true
+```
+(off by default). The index is per-machine; to wipe it, `rm -rf ~/.cache/codebase-memory-mcp/`.
