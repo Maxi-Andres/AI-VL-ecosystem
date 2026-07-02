@@ -1,0 +1,106 @@
+INFO:     Started server process [86660]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on https://0.0.0.0:8443 (Press CTRL+C to quit)
+INFO:     192.168.13.171:47394 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.13.171:47394 - "GET /config.js HTTP/1.1" 200 OK
+INFO:     192.168.13.171:47394 - "GET /assets/index-CiT31zCD.css HTTP/1.1" 200 OK
+INFO:     192.168.13.171:47394 - "GET /assets/index-rYHXj7vY.js HTTP/1.1" 200 OK
+INFO:     192.168.13.171:47394 - "GET /api/options HTTP/1.1" 200 OK
+INFO:     192.168.13.171:47416 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     192.168.13.171:47394 - "GET /api/classes?model=yolo11s.pt HTTP/1.1" 200 OK
+INFO:     192.168.13.171:34800 - "WebSocket /ws/detect" [accepted]
+INFO:     connection open
+INFO:     192.168.13.171:34814 - "GET / HTTP/1.1" 200 OK
+INFO:     connection closed
+INFO:     192.168.13.171:34814 - "GET /config.js HTTP/1.1" 200 OK
+INFO:     192.168.13.171:34814 - "GET /assets/index-CiT31zCD.css HTTP/1.1" 200 OK
+INFO:     192.168.13.171:34814 - "GET /assets/index-rYHXj7vY.js HTTP/1.1" 200 OK
+INFO:     192.168.13.171:34814 - "GET /api/options HTTP/1.1" 200 OK
+INFO:     192.168.13.171:34814 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     192.168.13.171:34814 - "GET /api/classes?model=yolo11s.pt HTTP/1.1" 200 OK
+INFO:     192.168.13.171:52994 - "WebSocket /ws/detect" [accepted]
+INFO:     connection open
+ConnectionClosedError exception in shielded future
+future: <Future finished exception=ConnectionClosedError(None, Close(code=<CloseCode.INTERNAL_ERROR: 1011>, reason='keepalive ping timeout'), None)>
+Traceback (most recent call last):
+  File "/home/ia-pc/Desktop/AI-VL-ecosystem/AI-VL-backend/.venv/lib/python3.14/site-packages/websockets/legacy/protocol.py", line 1276, in close_connection
+    await self.transfer_data_task
+  File "/home/ia-pc/Desktop/AI-VL-ecosystem/AI-VL-backend/.venv/lib/python3.14/site-packages/websockets/legacy/protocol.py", line 940, in transfer_data
+    message = await self.read_message()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ia-pc/Desktop/AI-VL-ecosystem/AI-VL-backend/.venv/lib/python3.14/site-packages/websockets/legacy/protocol.py", line 1010, in read_message
+    frame = await self.read_data_frame(max_size=self.max_size)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ia-pc/Desktop/AI-VL-ecosystem/AI-VL-backend/.venv/lib/python3.14/site-packages/websockets/legacy/protocol.py", line 1087, in read_data_frame
+    frame = await self.read_frame(max_size)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ia-pc/Desktop/AI-VL-ecosystem/AI-VL-backend/.venv/lib/python3.14/site-packages/websockets/legacy/protocol.py", line 1144, in read_frame
+    frame = await Frame.read(
+            ^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "/home/ia-pc/Desktop/AI-VL-ecosystem/AI-VL-backend/.venv/lib/python3.14/site-packages/websockets/legacy/framing.py", line 70, in read
+    data = await reader(2)
+           ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/asyncio/streams.py", line 769, in readexactly
+    await self._wait_for_data('readexactly')
+  File "/usr/lib/python3.14/asyncio/streams.py", line 539, in _wait_for_data
+    await self._waiter
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+websockets.exceptions.ConnectionClosedError: sent 1011 (internal error) keepalive ping timeout; no close frame received
+INFO:     connection closed
+INFO:     192.168.13.171:44634 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.13.171:44634 - "GET /config.js HTTP/1.1" 200 OK
+INFO:     192.168.13.171:44634 - "GET /assets/index-CiT31zCD.css HTTP/1.1" 200 OK
+INFO:     192.168.13.171:44634 - "GET /assets/index-rYHXj7vY.js HTTP/1.1" 200 OK
+INFO:     192.168.13.171:44662 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     192.168.13.171:44634 - "GET /api/options HTTP/1.1" 200 OK
+INFO:     192.168.13.171:44634 - "GET /api/classes?model=yolo11s.pt HTTP/1.1" 200 OK
+INFO:     192.168.13.171:37476 - "WebSocket /ws/detect" [accepted]
+INFO:     connection open
+ConnectionClosedOK exception in shielded future
+future: <Future finished exception=ConnectionClosedOK(Close(code=<CloseCode.NO_STATUS_RCVD: 1005>, reason=''), Close(code=<CloseCode.NO_STATUS_RCVD: 1005>, reason=''), True)>
+websockets.exceptions.ConnectionClosedOK: received 1005 (no status received [internal]); then sent 1005 (no status received [internal])
+INFO:     connection closed
+INFO:     192.168.13.171:48182 - "WebSocket /ws/detect" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     192.168.13.171:55770 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.13.171:55770 - "GET /config.js HTTP/1.1" 200 OK
+INFO:     192.168.13.171:55770 - "GET /assets/index-CiT31zCD.css HTTP/1.1" 200 OK
+INFO:     192.168.13.171:55770 - "GET /assets/index-rYHXj7vY.js HTTP/1.1" 200 OK
+INFO:     192.168.13.171:55770 - "GET /api/options HTTP/1.1" 200 OK
+INFO:     192.168.13.171:55790 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     192.168.13.171:55790 - "GET /api/classes?model=yolo11s.pt HTTP/1.1" 200 OK
+INFO:     192.168.13.171:60388 - "WebSocket /ws/detect" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     192.168.13.171:49074 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.13.171:49074 - "GET /config.js HTTP/1.1" 200 OK
+INFO:     192.168.13.171:49074 - "GET /assets/index-CiT31zCD.css HTTP/1.1" 200 OK
+INFO:     192.168.13.171:49074 - "GET /assets/index-rYHXj7vY.js HTTP/1.1" 200 OK
+INFO:     192.168.13.171:49112 - "GET /favicon.ico HTTP/1.1" 200 OK
+INFO:     192.168.13.171:49074 - "GET /api/options HTTP/1.1" 200 OK
+INFO:     192.168.13.171:49074 - "GET /api/classes?model=yolo11s.pt HTTP/1.1" 200 OK
+INFO:     192.168.13.171:49136 - "WebSocket /ws/detect" [accepted]
+INFO:     connection open
+INFO:     192.168.13.171:49100 - "GET /api/classes?model=yolo11n.pt HTTP/1.1" 200 OK
+INFO:     connection closed
+INFO:     192.168.13.176:53740 - "GET / HTTP/1.1" 200 OK
+INFO:     192.168.13.176:53740 - "GET /config.js HTTP/1.1" 200 OK
+INFO:     192.168.13.176:53741 - "GET /assets/index-rYHXj7vY.js HTTP/1.1" 200 OK
+INFO:     192.168.13.176:53742 - "GET /assets/index-CiT31zCD.css HTTP/1.1" 200 OK
+INFO:     192.168.13.176:53740 - "GET /api/options HTTP/1.1" 200 OK
+INFO:     192.168.13.176:53742 - "GET /api/classes?model=yolo11s.pt HTTP/1.1" 200 OK
+INFO:     192.168.13.176:53744 - "WebSocket /ws/detect" [accepted]
+INFO:     connection open
+INFO:     Shutting down
+INFO:     connection closed
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [86660]
