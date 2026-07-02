@@ -33,13 +33,13 @@ function Have($name) { [bool](Get-Command $name -ErrorAction SilentlyContinue) }
 
 function Ensure-WingetTool($cmd, $wingetId, $friendly) {
     Update-Path
-    if (Have $cmd) { Ok "$friendly ya instalado."; return }
-    Info "Instalando $friendly (winget: $wingetId) ..."
+    if (Have $cmd) { Ok "$friendly already installed."; return }
+    Info "Installing $friendly (winget: $wingetId) ..."
     winget install --id $wingetId -e --source winget `
         --accept-package-agreements --accept-source-agreements --disable-interactivity
     Update-Path
-    if (Have $cmd) { Ok "$friendly instalado." }
-    else { Warn "$cmd no aparecio en PATH tras instalar; puede requerir reiniciar la terminal/PC." }
+    if (Have $cmd) { Ok "$friendly installed." }
+    else { Warn "$cmd not on PATH after installing; may require restarting the terminal/PC." }
 }
 
 function Resolve-Python {
@@ -82,52 +82,52 @@ function Resolve-Bun {
 
 # Create a venv in $dir and install its requirements.txt.
 function Setup-PythonProject($dir, $pyLauncher, $label) {
-    Info "$label : preparando venv ..."
+    Info "$label : preparing venv ..."
     $venv   = Join-Path $dir '.venv'
     $venvPy = Join-Path $venv 'Scripts\python.exe'
     if (-not (Test-Path $venvPy)) {
         & $pyLauncher -m venv $venv
-        if ($LASTEXITCODE -ne 0) { throw "No se pudo crear el venv en $dir" }
+        if ($LASTEXITCODE -ne 0) { throw "Could not create the venv in $dir" }
     }
     & $venvPy -m pip install --upgrade pip
-    Info "$label : instalando dependencias (puede tardar; incluye torch/ultralytics en iacore) ..."
+    Info "$label : installing dependencies (may take a while; iacore includes torch/ultralytics) ..."
     & $venvPy -m pip install -r (Join-Path $dir 'requirements.txt')
-    if ($LASTEXITCODE -ne 0) { throw "pip install fallo en $label" }
-    Ok "$label listo."
+    if ($LASTEXITCODE -ne 0) { throw "pip install failed in $label" }
+    Ok "$label ready."
 }
 
 # =============================================================================
 Write-Host ''
-Info 'Paso 1/4 - Programas base (Python, Bun, Ollama)'
-if (-not (Have 'winget')) { throw "winget no esta disponible. Actualiza 'App Installer' desde Microsoft Store." }
+Info 'Step 1/4 - Base tools (Python, Bun, Ollama)'
+if (-not (Have 'winget')) { throw "winget is not available. Update 'App Installer' from the Microsoft Store." }
 Ensure-WingetTool 'python' 'Python.Python.3.12' 'Python 3.12'
 Ensure-WingetTool 'bun'    'Oven-sh.Bun'        'Bun'
 Ensure-WingetTool 'ollama' 'Ollama.Ollama'      'Ollama'
 $py = Resolve-Python
-if (-not $py) { throw "No encontre Python tras instalar. Reinicia la PC y volve a correr install.bat." }
-Ok "Python: usando '$py'."
+if (-not $py) { throw "Python not found after installing. Reboot the PC and re-run install.bat." }
+Ok "Python: using '$py'."
 
 Write-Host ''
-Info 'Paso 2/4 - Dependencias de Python (iacore + backend)'
+Info 'Step 2/4 - Python dependencies (iacore + backend)'
 Setup-PythonProject $coreDir    $py 'AI-VL-core (iacore)'
 Setup-PythonProject $backendDir $py 'AI-VL-backend'
 
 Write-Host ''
-Info 'Paso 3/4 - Dependencias del frontend (bun)'
+Info 'Step 3/4 - Frontend dependencies (bun)'
 $bun = Resolve-Bun
 if ($bun) {
     Push-Location $frontendDir
     & $bun install
     $rc = $LASTEXITCODE
     Pop-Location
-    if ($rc -ne 0) { throw "bun install fallo en el frontend" }
-    Ok 'AI-VL-frontend listo.'
+    if ($rc -ne 0) { throw "bun install failed in the frontend" }
+    Ok 'AI-VL-frontend ready.'
 } else {
-    Warn 'bun no esta disponible; se omite bun install. Instala Bun y volve a correr install.bat.'
+    Warn 'bun not available; skipping bun install. Install Bun and re-run install.bat.'
 }
 
 Write-Host ''
-Info 'Paso 4/4 - Modelo de Ollama'
+Info 'Step 4/4 - Ollama model'
 $model = 'qwen3-vl:4b-instruct'
 $cfg = Join-Path $coreDir 'config.json'
 if (Test-Path $cfg) {
@@ -135,24 +135,24 @@ if (Test-Path $cfg) {
 }
 $ollama = Resolve-Ollama
 if (-not $ollama) {
-    Warn "No encontre ollama.exe. Si recien lo instalaste, reinicia la PC y volve a correr install.bat."
+    Warn "ollama.exe not found. If you just installed it, reboot the PC and re-run install.bat."
 } else {
-    Info "Asegurando que el servidor de Ollama este arriba ..."
+    Info "Making sure the Ollama server is up ..."
     $up = $false
     for ($i = 0; $i -lt 30; $i++) {
         try { Invoke-WebRequest -UseBasicParsing 'http://localhost:11434/api/version' -TimeoutSec 2 | Out-Null; $up = $true; break }
         catch { if ($i -eq 0) { Start-Process -WindowStyle Hidden -FilePath $ollama -ArgumentList 'serve' -ErrorAction SilentlyContinue }; Start-Sleep 1 }
     }
     if ($up) {
-        Info "Descargando modelo '$model' (varios GB, una sola vez) ..."
+        Info "Pulling model '$model' (several GB, one time only) ..."
         & $ollama pull $model
-        if ($LASTEXITCODE -eq 0) { Ok "Modelo '$model' listo." }
-        else { Warn "No se pudo bajar '$model'. Podes bajarlo luego con: ollama pull $model" }
+        if ($LASTEXITCODE -eq 0) { Ok "Model '$model' ready." }
+        else { Warn "Could not pull '$model'. You can pull it later with: ollama pull $model" }
     } else {
-        Warn "El servidor de Ollama no respondio en :11434; se omite la descarga. Luego: ollama pull $model"
+        Warn "The Ollama server did not answer on :11434; skipping the pull. Later: ollama pull $model"
     }
 }
 
 Write-Host ''
-Ok 'INSTALACION COMPLETA. Ahora usa start.bat para prender todo.'
+Ok 'INSTALL COMPLETE. Now use run.bat to start everything.'
 Write-Host ''
