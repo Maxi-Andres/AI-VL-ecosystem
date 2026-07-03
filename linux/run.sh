@@ -133,6 +133,15 @@ info 'Starting iacore (:8001) ...'
 (
     cd "$CORE"
     export PYTHONUNBUFFERED=1      # emit logs immediately, no buffering
+    # Speech-to-text (Whisper) knobs. Defaults are CPU/int8/base so the ASR model
+    # does NOT compete with the VLM for the 8 GB GPU. Move it to the GPU by running
+    # e.g.  ASR_DEVICE=cuda ASR_COMPUTE_TYPE=float16 ./run.sh
+    export ASR_MODEL="${ASR_MODEL:-base}"
+    export ASR_DEVICE="${ASR_DEVICE:-cpu}"
+    export ASR_COMPUTE_TYPE="${ASR_COMPUTE_TYPE:-int8}"
+    # Neural text-to-speech (Piper). Default voice; override with TTS_VOICE=<name>
+    # (must match a <name>.onnx in piper_voices/). Runs on CPU, tiny footprint.
+    export TTS_VOICE="${TTS_VOICE:-es_AR-daniela-high}"
     exec .venv/bin/python -m uvicorn service:app --host 0.0.0.0 --port 8001
 ) > >(sed -u 's/^/[iacore]  /') 2>&1 &
 pids+=($!)

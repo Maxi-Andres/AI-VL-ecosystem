@@ -112,6 +112,42 @@ Info 'Step 2/4 - Python dependencies (iacore + backend)'
 Setup-PythonProject $coreDir    $py 'AI-VL-core (iacore)'
 Setup-PythonProject $backendDir $py 'AI-VL-backend'
 
+# Pre-download the Whisper (speech-to-text) weights so the first dictation works
+# offline, like the Ollama pull below. Best-effort: faster-whisper also downloads
+# the model lazily on first use. Defaults match asr_common (CPU/int8/base) and can
+# be overridden by setting ASR_* before running install.bat.
+$asrModel   = if ($env:ASR_MODEL)        { $env:ASR_MODEL }        else { 'base' }
+$asrDevice  = if ($env:ASR_DEVICE)       { $env:ASR_DEVICE }       else { 'cpu' }
+$asrCompute = if ($env:ASR_COMPUTE_TYPE) { $env:ASR_COMPUTE_TYPE } else { 'int8' }
+$coreVenvPy = Join-Path $coreDir '.venv\Scripts\python.exe'
+Info "AI-VL-core (iacore) : pre-downloading Whisper '$asrModel' weights (speech-to-text; one time) ..."
+& $coreVenvPy -c "from faster_whisper import WhisperModel; WhisperModel('$asrModel', device='$asrDevice', compute_type='$asrCompute')"
+if ($LASTEXITCODE -eq 0) { Ok "Whisper model '$asrModel' ready." }
+else { Warn "Could not pre-download the Whisper model; it will download on the first dictation instead." }
+
+# Piper TTS voices (neural text-to-speech). Downloaded once into iacore's
+# piper_voices/. Best-effort: browser voices work without these; drop more
+# <name>.onnx (+ .onnx.json) files there later (browse rhasspy/piper-voices).
+$voicesDir = Join-Path $coreDir 'piper_voices'
+if (-not (Test-Path $voicesDir)) { New-Item -ItemType Directory -Path $voicesDir | Out-Null }
+$piperBase = 'https://huggingface.co/rhasspy/piper-voices/resolve/main'
+function Get-PiperVoice($rel, $name) {
+    $onnx = Join-Path $voicesDir "$name.onnx"
+    $json = Join-Path $voicesDir "$name.onnx.json"
+    if ((Test-Path $onnx) -and (Test-Path $json)) { Ok "Piper voice '$name' already present."; return }
+    Info "Downloading Piper voice '$name' ..."
+    try {
+        Invoke-WebRequest -UseBasicParsing "$piperBase/$rel/$name.onnx" -OutFile $onnx
+        Invoke-WebRequest -UseBasicParsing "$piperBase/$rel/$name.onnx.json" -OutFile $json
+        Ok "Piper voice '$name' ready."
+    } catch {
+        Warn "Could not download Piper voice '$name'; add .onnx files to $voicesDir later."
+        Remove-Item -ErrorAction SilentlyContinue $onnx, $json
+    }
+}
+Get-PiperVoice 'es/es_AR/daniela/high'    'es_AR-daniela-high'
+Get-PiperVoice 'es/es_ES/sharvard/medium' 'es_ES-sharvard-medium'
+
 Write-Host ''
 Info 'Step 3/4 - Frontend dependencies (bun)'
 $bun = Resolve-Bun

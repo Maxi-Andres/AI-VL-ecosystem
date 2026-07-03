@@ -126,6 +126,42 @@ info 'Step 2/4 - Python dependencies (iacore + backend)'
 setup_py_project "$CORE"    'AI-VL-core (iacore)'
 setup_py_project "$BACKEND" 'AI-VL-backend'
 
+# Pre-download the Whisper (speech-to-text) weights so the first dictation works
+# offline, like the Ollama pull below. Best-effort: faster-whisper also downloads
+# the model lazily on first use, so a failure here is not fatal. Defaults match
+# asr_common (CPU/int8/base) and can be overridden by exporting ASR_* before install.
+ASR_MODEL_DL="${ASR_MODEL:-base}"
+info "AI-VL-core (iacore) : pre-downloading Whisper '$ASR_MODEL_DL' weights (speech-to-text; one time) ..."
+if "$CORE/.venv/bin/python" - <<PY 2>/dev/null
+from faster_whisper import WhisperModel
+WhisperModel("${ASR_MODEL_DL}", device="${ASR_DEVICE:-cpu}", compute_type="${ASR_COMPUTE_TYPE:-int8}")
+PY
+then ok "Whisper model '$ASR_MODEL_DL' ready."
+else warn "Could not pre-download the Whisper model; it will download on the first dictation instead."; fi
+
+# Piper TTS voices (neural text-to-speech). Downloaded once into iacore's
+# piper_voices/. Best-effort: browser voices work without these, and you can drop
+# more <name>.onnx (+ .onnx.json) files there later (browse rhasspy/piper-voices).
+VOICES_DIR="$CORE/piper_voices"
+PIPER_BASE="https://huggingface.co/rhasspy/piper-voices/resolve/main"
+mkdir -p "$VOICES_DIR"
+dl_voice() {
+    local rel="$1" name="$2"
+    if [ -f "$VOICES_DIR/$name.onnx" ] && [ -f "$VOICES_DIR/$name.onnx.json" ]; then
+        ok "Piper voice '$name' already present."; return
+    fi
+    info "Downloading Piper voice '$name' ..."
+    if curl -fsSL "$PIPER_BASE/$rel/$name.onnx" -o "$VOICES_DIR/$name.onnx" \
+       && curl -fsSL "$PIPER_BASE/$rel/$name.onnx.json" -o "$VOICES_DIR/$name.onnx.json"; then
+        ok "Piper voice '$name' ready."
+    else
+        warn "Could not download Piper voice '$name'; add .onnx files to $VOICES_DIR later."
+        rm -f "$VOICES_DIR/$name.onnx" "$VOICES_DIR/$name.onnx.json"
+    fi
+}
+dl_voice "es/es_AR/daniela/high"   "es_AR-daniela-high"     # Rioplatense (default)
+dl_voice "es/es_ES/sharvard/medium" "es_ES-sharvard-medium"  # Castilian (alternative)
+
 printf '\n'
 info 'Step 3/4 - Frontend dependencies (bun)'
 export PATH="$HOME/.bun/bin:$PATH"

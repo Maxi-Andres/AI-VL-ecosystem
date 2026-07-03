@@ -152,8 +152,17 @@ for ($i = 0; $i -lt 15; $i++) {
 }
 
 # --- 6) iacore (:8001) -------------------------------------------------------
+# Speech-to-text (Whisper) knobs. Defaults are CPU/int8/base so the ASR model does
+# NOT compete with the VLM for the 8 GB GPU. Move it to the GPU by setting
+# ASR_DEVICE=cuda / ASR_COMPUTE_TYPE=float16 before running run.bat.
+$asrModel   = if ($env:ASR_MODEL)        { $env:ASR_MODEL }        else { 'base' }
+$asrDevice  = if ($env:ASR_DEVICE)       { $env:ASR_DEVICE }       else { 'cpu' }
+$asrCompute = if ($env:ASR_COMPUTE_TYPE) { $env:ASR_COMPUTE_TYPE } else { 'int8' }
+# Neural text-to-speech (Piper) default voice; override with TTS_VOICE=<name>.
+$ttsVoice   = if ($env:TTS_VOICE)        { $env:TTS_VOICE }        else { 'es_AR-daniela-high' }
 Info 'Starting iacore (:8001) ...'
-Start-Process cmd.exe -ArgumentList '/k','title AI-VL iacore :8001 & .venv\Scripts\python.exe -m uvicorn service:app --host 0.0.0.0 --port 8001' -WorkingDirectory $coreDir
+$iacoreCmd = "title AI-VL iacore :8001 & set ASR_MODEL=$asrModel & set ASR_DEVICE=$asrDevice & set ASR_COMPUTE_TYPE=$asrCompute & set TTS_VOICE=$ttsVoice & .venv\Scripts\python.exe -m uvicorn service:app --host 0.0.0.0 --port 8001"
+Start-Process cmd.exe -ArgumentList '/k',$iacoreCmd -WorkingDirectory $coreDir
 
 # --- 7) backend HTTPS (:8443), serves the SPA + /api + /ws on one origin ------
 Info "Starting backend HTTPS (:$httpsPort) serving the frontend ..."
