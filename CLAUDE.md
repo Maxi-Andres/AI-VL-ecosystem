@@ -35,3 +35,25 @@ report — the user reviews and commits everything manually.
 `run.sh` builds the frontend, then starts iacore (`:8001`) and the backend over
 HTTPS (`:8443`) serving the SPA + `/api` + `/ws` on one origin, and opens the
 server monitor (`/monitor`) in the local browser.
+
+## Skills
+
+- **`/cr`** — code review of all uncommitted changes across the four repos against
+  the project conventions, goals, code duplication, and the shared best-practices
+  standard (`.claude/skills/cr/references/best-practices.md`). Read-only; never
+  commits. Run it before committing.
+- **`cross-tier-feature`** — the procedure for threading a capability through the
+  three tiers (frontend → backend → iacore): where each piece lives and how to keep
+  the contract consistent. Read it whenever a change spans more than one repo or
+  adds/modifies an HTTP/WS route.
+- The iacore repo also ships an **`ollama-vlm-tuning`** skill for deep VLM/model
+  tuning (VRAM, `qwen3-vl` checkpoints, `num_ctx`/`num_predict`, latency).
+
+## Code intelligence (codebase-memory)
+
+`.mcp.json` ships a local `codebase-memory-mcp` server that indexes all four repos
+into a knowledge graph (functions, routes, cross-repo HTTP links). **Prefer it over
+hand-maintained tables** for code structure/endpoints: `get_architecture`,
+`search_graph`, `search_code`, `trace_path`. The graph is kept fresh automatically
+by `.claude/hooks/reindex-if-needed.sh` (SessionStart/Stop; re-indexes a repo only
+when its git signature changed). Setup and re-index details are in `README.md`.
