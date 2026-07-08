@@ -159,8 +159,11 @@ dl_voice() {
         rm -f "$VOICES_DIR/$name.onnx" "$VOICES_DIR/$name.onnx.json"
     fi
 }
-dl_voice "es/es_AR/daniela/high"   "es_AR-daniela-high"     # Rioplatense (default)
-dl_voice "es/es_ES/sharvard/medium" "es_ES-sharvard-medium"  # Castilian (alternative)
+dl_voice "es/es_AR/daniela/high"    "es_AR-daniela-high"     # Rioplatense, female (default)
+dl_voice "es/es_ES/davefx/medium"   "es_ES-davefx-medium"    # Castilian, male
+dl_voice "es/es_ES/sharvard/medium" "es_ES-sharvard-medium"  # Castilian
+dl_voice "es/es_MX/ald/medium"      "es_MX-ald-medium"       # Mexican, male
+dl_voice "es/es_MX/claude/high"     "es_MX-claude-high"      # Mexican, female
 
 printf '\n'
 info 'Step 3/4 - Frontend dependencies (bun)'

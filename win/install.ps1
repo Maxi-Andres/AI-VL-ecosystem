@@ -145,8 +145,11 @@ function Get-PiperVoice($rel, $name) {
         Remove-Item -ErrorAction SilentlyContinue $onnx, $json
     }
 }
-Get-PiperVoice 'es/es_AR/daniela/high'    'es_AR-daniela-high'
-Get-PiperVoice 'es/es_ES/sharvard/medium' 'es_ES-sharvard-medium'
+Get-PiperVoice 'es/es_AR/daniela/high'    'es_AR-daniela-high'    # Rioplatense, female (default)
+Get-PiperVoice 'es/es_ES/davefx/medium'   'es_ES-davefx-medium'   # Castilian, male
+Get-PiperVoice 'es/es_ES/sharvard/medium' 'es_ES-sharvard-medium' # Castilian
+Get-PiperVoice 'es/es_MX/ald/medium'      'es_MX-ald-medium'      # Mexican, male
+Get-PiperVoice 'es/es_MX/claude/high'     'es_MX-claude-high'     # Mexican, female
 
 Write-Host ''
 Info 'Step 3/4 - Frontend dependencies (bun)'
