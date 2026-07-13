@@ -151,6 +151,27 @@ Get-PiperVoice 'es/es_ES/sharvard/medium' 'es_ES-sharvard-medium' # Castilian
 Get-PiperVoice 'es/es_MX/ald/medium'      'es_MX-ald-medium'      # Mexican, male
 Get-PiperVoice 'es/es_MX/claude/high'     'es_MX-claude-high'     # Mexican, female
 
+# Kokoro TTS model (neural, a notch nicer than Piper; CPU/offline). One ~310 MB
+# ONNX model + a ~27 MB voices file, downloaded once into iacore's kokoro_models/.
+# Best-effort: Piper and browser voices work without these.
+$kokoroDir = Join-Path $coreDir 'kokoro_models'
+if (-not (Test-Path $kokoroDir)) { New-Item -ItemType Directory -Path $kokoroDir | Out-Null }
+$kokoroBase = 'https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0'
+function Get-KokoroFile($name) {
+    $dest = Join-Path $kokoroDir $name
+    if (Test-Path $dest) { Ok "Kokoro '$name' already present."; return }
+    Info "Downloading Kokoro '$name' ..."
+    try {
+        Invoke-WebRequest -UseBasicParsing "$kokoroBase/$name" -OutFile $dest
+        Ok "Kokoro '$name' ready."
+    } catch {
+        Warn "Could not download Kokoro '$name'; add it to $kokoroDir later (Piper still works)."
+        Remove-Item -ErrorAction SilentlyContinue $dest
+    }
+}
+Get-KokoroFile 'kokoro-v1.0.onnx'
+Get-KokoroFile 'voices-v1.0.bin'
+
 Write-Host ''
 Info 'Step 3/4 - Frontend dependencies (bun)'
 $bun = Resolve-Bun
