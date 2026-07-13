@@ -10,9 +10,14 @@ AI-VL-backend/
 AI-VL-frontend/
 
 # --- Local TLS certificates --------------------------------------------------
-# Generated per machine/IP by win/run.bat. The private key (key.pem) must NEVER
-# be pushed to git; they also depend on the IP, so versioning them is pointless.
+# Generated per machine/IP by the run launcher (linux/run.sh, win/run.ps1). The
+# private key (key.pem) must NEVER be pushed to git; they also depend on the IP,
+# so versioning them is pointless.
 certs/
+
+# --- Runtime logs ------------------------------------------------------------
+# Service stdout/stderr captured while running (leak LAN IPs, bloat the repo).
+*.log
 
 # --- codebase-memory reindex cache (per-machine signatures) ------------------
 .claude/.reindex-state/

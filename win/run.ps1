@@ -161,12 +161,15 @@ $asrCompute = if ($env:ASR_COMPUTE_TYPE) { $env:ASR_COMPUTE_TYPE } else { 'int8'
 # Neural text-to-speech (Piper) default voice; override with TTS_VOICE=<name>.
 $ttsVoice   = if ($env:TTS_VOICE)        { $env:TTS_VOICE }        else { 'es_AR-daniela-high' }
 Info 'Starting iacore (:8001) ...'
-$iacoreCmd = "title AI-VL iacore :8001 & set ASR_MODEL=$asrModel & set ASR_DEVICE=$asrDevice & set ASR_COMPUTE_TYPE=$asrCompute & set TTS_VOICE=$ttsVoice & .venv\Scripts\python.exe -m uvicorn service:app --host 0.0.0.0 --port 8001"
+# Quote each `set` assignment so values with spaces don't break the cmd chain.
+$iacoreCmd = "title AI-VL iacore :8001 & set `"ASR_MODEL=$asrModel`" & set `"ASR_DEVICE=$asrDevice`" & set `"ASR_COMPUTE_TYPE=$asrCompute`" & set `"TTS_VOICE=$ttsVoice`" & .venv\Scripts\python.exe -m uvicorn service:app --host 0.0.0.0 --port 8001"
 Start-Process cmd.exe -ArgumentList '/k',$iacoreCmd -WorkingDirectory $coreDir
 
 # --- 7) backend HTTPS (:8443), serves the SPA + /api + /ws on one origin ------
 Info "Starting backend HTTPS (:$httpsPort) serving the frontend ..."
-$cmd = "title AI-VL phone backend HTTPS :$httpsPort & set IACORE_URL=http://localhost:8001 & set CORS_ORIGINS=* & set FRONTEND_DIST=$dist & .venv\Scripts\python.exe -m uvicorn app:app --host 0.0.0.0 --port $httpsPort --ssl-keyfile $key --ssl-certfile $crt"
+# Quote the `set` assignments and the cert/dist paths: $root (hence $dist/$key/
+# $crt) may contain spaces, which would otherwise split the uvicorn arguments.
+$cmd = "title AI-VL phone backend HTTPS :$httpsPort & set `"IACORE_URL=http://localhost:8001`" & set `"CORS_ORIGINS=*`" & set `"FRONTEND_DIST=$dist`" & .venv\Scripts\python.exe -m uvicorn app:app --host 0.0.0.0 --port $httpsPort --ssl-keyfile `"$key`" --ssl-certfile `"$crt`""
 Start-Process cmd.exe -ArgumentList '/k',$cmd -WorkingDirectory $backendDir
 
 Write-Host ''
