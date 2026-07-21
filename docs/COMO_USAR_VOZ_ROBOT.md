@@ -6,6 +6,17 @@ Loop completo: **hablás/escribís → el intérprete elige un skill → botón 
 🎤 → /command (skill JSON) → botón "Execute on robot" → backend /api/execute → ejecutor (ROS2) → 🤖 Go2
 ```
 
+## Opción rápida — todo de una
+Con el Go2 conectado (ver paso 1), desde `~/Desktop/AI-VL-ecosystem` un solo comando
+levanta el devcontainer + el `robot_executor` + AI-VL:
+```bash
+! ./linux/run-with-robot.sh
+```
+Ctrl+C corta todo. Para probar sin mover el robot: `DRY_RUN=true ./linux/run-with-robot.sh`.
+Si el `unitree_ros2` no está en `~/Desktop`, pasá `UNITREE_ROS2_DIR=/ruta ./linux/run-with-robot.sh`.
+
+Si preferís hacerlo a mano (o entender cada pieza), seguí los pasos de abajo.
+
 ## 1) Conectar el Go2
 - Cable ethernet perro ↔ PC. En `enp4s0`: IP fija `192.168.123.99`, máscara `255.255.255.0`.
 - Verificá que esté conectado:
