@@ -174,6 +174,37 @@ translates the spoken command into it, then that skill is executed through ROS2.
    LuckyEngine `walker.onnx` at `LowCmd` level is a **later option**, only if the
    built-in walking isn't enough.
 
+## Layered reference architecture (north star)
+
+A full-system reference for the compound-instruction G1 ("grab that box and take it to
+the kitchen") lives at [`../ARQUITECTURA_ROBOT_G1_PROPUESTA.md`]. It is the **north
+star**, reached incrementally through the phases below; it is **G1-only** (SONIC/GR00T
+are G1 embodiments). Its layers map to our phases:
+
+| Reference layer | Our phase(s) |
+|---|---|
+| 0 — Comms (`unitree_sdk2` / `unitree_ros2`) | 0 + abstracted-transport decision |
+| 1 — Perception | 3 (perception-3D) + 7 (SLAM) |
+| 2 — Nav2 (navigation) | 7 |
+| 3 — SONIC (whole-body control) | 9 |
+| 4 — GR00T (VLA manipulation) | 8 (classical alternative in 4) |
+| 5 — LLM orchestrator | 1 (seed) → 6 (task planner) → 10 (arbitration) |
+
+Two design decisions are locked in:
+
+- **Transport-abstracted executor.** The skill executor talks to the robot through a
+  thin `RobotTransport` interface with two implementations: `unitree_sdk2` (Python, now)
+  and `unitree_ros2` (added when Nav2 arrives, since Nav2 is ROS2-native). Neither the
+  interpreter nor the executor depends on a concrete transport. Applies to **G1 and Go2**.
+- **`/command` is the orchestrator seed.** Today it maps text → ONE skill; in phase 6 it
+  grows into decomposing a compound instruction into an ordered skill sequence plus
+  controller arbitration. Build phase 2 with this evolution in mind.
+
+**Two robot tracks:** the **G1** (humanoid) track uses the loco/arm clients and, later,
+SONIC/GR00T. The **Go2** (quadruped "dog") track uses the `SportClient` and its own
+navigation — it does **not** use SONIC/GR00T (those are G1 embodiments). Both share the
+abstracted transport and the same command-interpreter/orchestrator.
+
 ## Roadmap (phased)
 
 0. **Prereqs (once):** build `unitree_sdk2` (or install `unitree_sdk2_python`); run the
@@ -181,7 +212,8 @@ translates the spoken command into it, then that skill is executed through ROS2.
 1. **Voice→intent:** `POST /command` (reuses `query_vlm`); loop transcribe→command→speak.
 2. **Locomotion by voice (easiest win, no LuckyEngine):** wire `walk`/`turn`/`stop`/
    `sit`/`wave` to the built-in loco client (`Move`, `StandUp`, `StopMove`, `WaveHand`).
-   "Come here / stop / wave" working end-to-end.
+   "Come here / stop / wave" working end-to-end. Build the executor
+   **transport-abstracted** (see the section above), so ROS2/Nav2 can slot in later.
 3. **Perception-3D:** bbox + depth + intrinsics + hand-eye → pelvis-frame pose (verify
    vs tape measure). Needs the G1 camera model.
 4. **`grab` skill (custom, harder):** IK + velocity profile via SDK arm/hand clients;
@@ -189,6 +221,33 @@ translates the spoken command into it, then that skill is executed through ROS2.
    the LuckyEngine grasp FSM/offsets as the blueprint.
 5. **Full integration + robustness:** chain everything; spoken error handling;
    (medium term) move fine grasping to LeRobot/ACT (`Piper Pattern Stacking/tools/`).
+
+### Toward the full system (north-star phases)
+
+6. **Compound-command planner (orchestrator):** grow `/command` from one skill to
+   decomposing a compound instruction into an ordered skill/subtask sequence (plan JSON)
+   driven by a task state machine / behavior tree — e.g. "grab the box and take it to
+   the kitchen" → `[locate(box), navigate_to(box), grab(box), navigate_to(kitchen),
+   place]`. Reuses the interpreter / `query_vlm`. (Reference layer 5.)
+7. **Navigation (Nav2 + SLAM):** map the environment, localize, global path planning and
+   dynamic obstacle avoidance; semantic destinations ("kitchen") → pose; drive via
+   `cmd_vel`/waypoints. Uses the **ROS2** transport (hence the abstraction). (Layers 1+2.)
+8. **Learned manipulation (Isaac GR00T + LeRobot):** collect teleop demos (VR /
+   `xr_teleoperate`) on the real G1, fine-tune GR00T (LeRobot format, G1 embodiment tag),
+   deploy server-client (PolicyServer); validate in `unitree_sim_isaaclab` / MuJoCo. The
+   scalable replacement for the hand-coded `grab` (phase 4). (Layer 4.)
+9. **Whole-body control (SONIC) [optional/advanced]:** deploy GEAR-SONIC for coordinated
+   whole-body locomotion+manipulation when stock walking isn't enough. Watch the reported
+   ankle/hip motor overheating. (Layer 3.)
+10. **Mobile-manipulation integration + arbitration:** chain planner ↔ Nav2 ↔ manipulation
+    (GR00T) with **explicit controller arbitration** (mutual exclusion between navigation
+    and manipulation modes — no conflicting joint commands), plus spoken feedback and
+    error recovery. Delivers the canonical "grab the box and take it to the kitchen"
+    end-to-end.
+
+Phases 6–10 are the **G1** track. The **Go2** grows in parallel with its own
+`SportClient` skills + navigation, sharing the interpreter/orchestrator and the
+abstracted transport, but not SONIC/GR00T.
 
 ## Constraints
 
