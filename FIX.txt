@@ -6,11 +6,13 @@ To do:
 
 - poner una base de datos para que la ia pueda tener mas contexto o cosas para las prompts
 
-dividir en dos las opciones por que es muy largo ya que cambies de pagina, yolo, vlm, commands y control (nuevo)
+nueva tab para controlar movimiento de robot como hace el shoystick
 
 despues en la version final hay que implementar que solo este el modo de voz y que el sepa elegir si es una accion o si es una pregunta, y si tiene o no que usar las imagenes de la camara, ya sea para una accion o para una pregunta.
 
 mejorar el tts es una chota
+
+en command_common.py meter los examples en español, creo que eso es lo que usa para determinal la skill por que no le esta pegando mucho la verdad 
 
 que se pueda activar y desactivar yolo tambien con un switch y que sea para el el que sea que sea el video, ya sea live o el video de el robot
 
@@ -22,9 +24,11 @@ que se pueda manejar desde la app tipo los sticks y que se pueda desplegar una l
 
 no anda lo de que si le decis "camina para adelante un segundo" lo haga por un segundo, sigue caminando indefinidamente
 
-que se pueda agrandar la pantalla de el robot tambien a pantalla completa y que sea un poco mas chica
-
 que el SELECCIONAR el robot que estas usando sea mas obvio
+
+que tenga una pill arriba que ponga si el robot esta conectado tipo robot online, y podria incluso el disernir cual es o algo asi
+
+cambiar la estructura de vlm por que no se entiende mucho
 
 Done:
 - !IMPORTANTE para la foto de las chicas tenes que poner esto, si no se queda sin contexto y no da output, pero tarda mucho (30segs) para mi va a haber que hacer muchos modelos uno para personas por ejemplo, uno para objetos, quiza que lo identifique con el prompt de voz que le das que ahi elija cual usar 
@@ -72,6 +76,10 @@ que se pueda poner para que ejecute los comandos solo tipo switch on off y que s
 en command common poner eejemplos en español de que tiene que hacer por que le se equivoca bastante
 
 que se pueda tambien poner pantalla completa en monitor, no se por que no tiene la opcion, tienen que ser lo mismo 
+
+dividir en dos las opciones por que es muy largo ya que cambies de pagina, yolo, vlm, commands y control (nuevo EN OTRA TAB DIRECTAMENTE)
+
+que se pueda agrandar la pantalla de el robot tambien a pantalla completa y que sea un poco mas chica
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
