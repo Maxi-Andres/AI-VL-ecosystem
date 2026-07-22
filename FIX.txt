@@ -2,6 +2,36 @@ para poder usar yolo
 source ".venv/bin/activate   # la consola va a mostrar (.venv)
 deactivate                   # salis de el venv
 
+To do:
+
+- poner una base de datos para que la ia pueda tener mas contexto o cosas para las prompts
+
+dividir en dos las ocoines por que es muy largo ya que cambies de pagina
+
+despues en la version final hay que implementar que solo este el modo de voz y que el sepa elegir si es una accion o si es una pregunta, y si tiene o no que usar las imagenes de la camara, ya sea para una accion o para una pregunta.
+
+hace las cosas para el perro men no solo para el humano, aparte el perro es mas facil de levantar y usar
+
+que se pueda poner para que ejecute los comandos solo tipo switch on off y que se pueda tambien switch para que ejecute los comandos de una o que tengas que tocar el boton para activarlos
+
+mejorar el tts es una chota
+
+que se pueda activar y desactivar yolo tambien con un switch y que sea para el el que sea que sea el video, ya sea live o el video de el robot
+
+se puede saber la cantidad de bateria?
+
+que se pueda cambiar la resolucion de el video de el robot
+
+que se pueda manejar desde la app tipo los sticks y que se pueda desplegar una lista de las accciones que puede hacer en el front y que las puedas tocar de una y se haga, eso depende de el robot que selecciones tienen que cambiar
+
+que se pueda cambiar desde el front la cantidad de fps y la resolucion
+
+no anda lo de que si le decis "camina para adelante un segundo" sea un segundo, sigue caminando
+
+que se pueda agrandar la pantalla de el robot tambien a pantalla completa y que sea un poco mas chica
+
+
+Done:
 - !IMPORTANTE para la foto de las chicas tenes que poner esto, si no se queda sin contexto y no da output, pero tarda mucho (30segs) para mi va a haber que hacer muchos modelos uno para personas por ejemplo, uno para objetos, quiza que lo identifique con el prompt de voz que le das que ahi elija cual usar 
   "max_tokens": 2048,
   "num_ctx": 8192,
@@ -27,7 +57,6 @@ el tiempo desde que toco enter hasta que veo como imprime lo que piensa y tambie
 DONE - que los benchmarks se guarden en distintos archivos que no se pisen entre ellos si no no se puede comparar, y que en estos ademas de lo que se guarda tambien se guarden los jsons de cada imagen que detectan para poder ver que pusieron, verificar tambien que la ia no lea los nombres de las imagenes, eso es trampa
 
 - hace un front real para no usar mas la consola fijate si podes hacer que python sea el back end
-- poner una base de datos para que la ia pueda tener mas contexto o cosas para las prompts
 
 - !FIJATE de provar que onda YOLOv8 o v11 quiza son mas rapidos o podes usar eso para hacer rapido y despues los vl para el movimiento de el robot y las respuestas a comandos de voz
 
@@ -38,31 +67,8 @@ DONE - que los benchmarks se guarden en distintos archivos que no se pisen entre
 
 - en el tiempo tenes que considerar la primera deteccion que tarda mas por que se carga el modelo en vram
 
-
 cuando le decis interpret es mucho mas rapida, eso debe ser por que no manda imagen
 tiene que poder dicernir si analizar la imagen o hacer un movimiento, 
-
-dividir en dos las ocoines por que es muy largo ya
-
-despues en la version final hay que implementar que solo este el modo de voz y que el sepa elegir si es una accion o si es una pregunta, y si tiene o no que usar las imagenes de la camara, ya sea para una accion o para una pregunta.
-
-hace las cosas para el perro men no solo para el humano, aparte el perro es mas facil de levantar y usar
-
-que se pueda poner para que ejecute los comandos solo tipo switch on off y que se pueda tambien switch para que ejecute los comandos de una o que tengas que tocar el boton para activarlos
-
-mejorar el tts es una chota
-
-que se pueda activar y desactivar yolo tambien con un switch y que sea para el el que sea que sea el video, ya sea live o el video de el robot
-
-se puede saber la cantidad de bateria?
-
-que se pueda cambiar la resolucion de el video de el robot
-
-que se pueda manejar desde la app tipo los sticks y que se pueda desplegar una lista de las accciones que puede hacer en el front y que las puedas tocar de una y se haga, eso depende de el robot que selecciones tienen que cambiar
-
-que se pueda cambiar desde el front la cantidad de fps y la resolucion
-
-no anda lo de que si le decis "camina para adelante un segundo" sea un segundo, sigue caminando
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
