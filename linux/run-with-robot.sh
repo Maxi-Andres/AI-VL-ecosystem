@@ -22,6 +22,7 @@ AIVL_RUN="$SELF/run.sh"
 UNITREE_ROS2_DIR="${UNITREE_ROS2_DIR:-$HOME/Desktop/unitree_ros2}"
 CONTAINER="${EXECUTOR_CONTAINER:-unitree_ros2_devcontainer-devcontainer-humble-1}"
 EXEC_PORT="${EXECUTOR_PORT:-8090}"
+CAM_PORT="${CAMERA_CONTROL_PORT:-8091}"
 
 info(){ printf '\033[36m[ run+robot ] %s\033[0m\n' "$*"; }
 ok(){   printf '\033[32m[ run+robot ] %s\033[0m\n' "$*"; }
@@ -31,6 +32,7 @@ command -v docker >/dev/null 2>&1 || { warn "docker not found."; exit 1; }
 [ -f "$AIVL_RUN" ] || { warn "Cannot find AI-VL run.sh ($AIVL_RUN)."; exit 1; }
 
 health(){ curl -fsS --max-time 2 "http://localhost:$EXEC_PORT/health" >/dev/null 2>&1; }
+camhealth(){ curl -fsS --max-time 2 "http://localhost:$CAM_PORT/health" >/dev/null 2>&1; }
 
 # --- 1) Devcontainer up ------------------------------------------------------
 if docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
@@ -63,15 +65,30 @@ else
   fi
 fi
 
-# --- 3) Stop the executor on exit --------------------------------------------
+# --- 3) robot_camera_bridge inside the container -----------------------------
+# Started but idle (streaming OFF): the Monitor's "Use robot camera" button turns
+# the stream on. This just makes its control endpoint available.
+if camhealth; then
+  ok "Camera bridge already running on :$CAM_PORT."
+else
+  info "Starting robot_camera_bridge inside the container…"
+  docker exec -d "$CONTAINER" \
+    bash -lc 'bash /workspace/robot_camera_bridge/run_camera_bridge.sh >/tmp/robot_camera_bridge.log 2>&1'
+  for _ in $(seq 1 15); do camhealth && break; sleep 1; done
+  camhealth && ok "Camera bridge OK on :$CAM_PORT." \
+    || warn "Camera bridge did not answer. Log: docker exec $CONTAINER cat /tmp/robot_camera_bridge.log"
+fi
+
+# --- 4) Stop the container processes on exit ---------------------------------
 cleaned=0
 cleanup(){
   [ "$cleaned" = 1 ] && return; cleaned=1
-  printf '\n'; info "Stopping robot_executor…"
+  printf '\n'; info "Stopping robot_executor + robot_camera_bridge…"
   docker exec "$CONTAINER" pkill -f robot_executor_service.py >/dev/null 2>&1 || true
+  docker exec "$CONTAINER" pkill -f robot_camera_bridge.py >/dev/null 2>&1 || true
 }
 trap cleanup INT TERM EXIT
 
-# --- 4) AI-VL stack (blocks; Ctrl+C stops everything) ------------------------
+# --- 5) AI-VL stack (blocks; Ctrl+C stops everything) ------------------------
 info "Starting AI-VL (iacore + backend + monitor). Ctrl+C stops EVERYTHING."
 bash "$AIVL_RUN"
