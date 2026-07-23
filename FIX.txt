@@ -14,8 +14,6 @@ mejorar el tts es una chota
 
 en command_common.py meter los examples en español, creo que eso es lo que usa para determinal la skill por que no le esta pegando mucho la verdad 
 
-que se pueda activar y desactivar yolo tambien con un switch y que sea para el el que sea que sea el video, ya sea live o el video de el robot
-
 se puede saber la cantidad de bateria?
 
 que se pueda cambiar la resolucion de el video de el robot y los fps
@@ -29,6 +27,8 @@ que el SELECCIONAR el robot que estas usando sea mas obvio
 que tenga una pill arriba que ponga si el robot esta conectado tipo robot online, y podria incluso el disernir cual es o algo asi
 
 cambiar la estructura de vlm por que no se entiende mucho
+
+ver como implementar el microfono y los parlantes de el robot, ver todas las opciones que tiene el robot basicamente, (poder hacer lo mismo de la app de unitree pero en esto asi no hace falta usarla)
 
 Done:
 - !IMPORTANTE para la foto de las chicas tenes que poner esto, si no se queda sin contexto y no da output, pero tarda mucho (30segs) para mi va a haber que hacer muchos modelos uno para personas por ejemplo, uno para objetos, quiza que lo identifique con el prompt de voz que le das que ahi elija cual usar 
@@ -80,6 +80,9 @@ que se pueda tambien poner pantalla completa en monitor, no se por que no tiene 
 dividir en dos las opciones por que es muy largo ya que cambies de pagina, yolo, vlm, commands y control (nuevo EN OTRA TAB DIRECTAMENTE)
 
 que se pueda agrandar la pantalla de el robot tambien a pantalla completa y que sea un poco mas chica
+
+que se pueda activar y desactivar yolo tambien con un switch y que sea para el el que sea que sea el video, ya sea live o el video de el robot
+
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
