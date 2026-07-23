@@ -30,6 +30,14 @@ cambiar la estructura de vlm por que no se entiende mucho
 
 ver como implementar el microfono y los parlantes de el robot, ver todas las opciones que tiene el robot basicamente, (poder hacer lo mismo de la app de unitree pero en esto asi no hace falta usarla)
 
+rtsp? usar algun protocolo o algo para que sea mas rapido
+
+CUANDO ESTA EL SAFE OFFF TIENE QUE ESTAR EN ROJO, y cuando esta on, te tiene que poner los botones peligrosos en diabled
+
+te tiene que dejar elegir el robot y cambiar los botones, que el robot se cambie globalemente desde el header, corregir lo de la pill eso pone conected cuando muestra la camara de live
+
+--------------------------------------------------------------
+
 Done:
 - !IMPORTANTE para la foto de las chicas tenes que poner esto, si no se queda sin contexto y no da output, pero tarda mucho (30segs) para mi va a haber que hacer muchos modelos uno para personas por ejemplo, uno para objetos, quiza que lo identifique con el prompt de voz que le das que ahi elija cual usar 
   "max_tokens": 2048,
