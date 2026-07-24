@@ -36,6 +36,10 @@ CUANDO ESTA EL SAFE OFFF TIENE QUE ESTAR EN ROJO, y cuando esta on, te tiene que
 
 te tiene que dejar elegir el robot y cambiar los botones, que el robot se cambie globalemente desde el header, corregir lo de la pill eso pone conected cuando muestra la camara de live
 
+sacar los frames van a el back para despues lo de yolo, , o que en el drive sean directos los frames sin latencia
+
+anda como el orto el view only arreglalo
+
 --------------------------------------------------------------
 
 Done:
