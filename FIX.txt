@@ -44,6 +44,7 @@ agente de splunk y agente de thousand eyes
 
 LA ip que agarra por wireless no es la misma que cuando me conecto por cable? por que son dos computadoras diferentes??
 
+verifica que funcionen todas las opciones que tienen para ejecutar ambos robots
 
 --------------------------------------------------------------
 
