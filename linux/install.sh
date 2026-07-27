@@ -165,6 +165,26 @@ dl_voice "es/es_ES/sharvard/medium" "es_ES-sharvard-medium"  # Castilian
 dl_voice "es/es_MX/ald/medium"      "es_MX-ald-medium"       # Mexican, male
 dl_voice "es/es_MX/claude/high"     "es_MX-claude-high"      # Mexican, female
 
+# Kokoro TTS model (neural, a notch nicer than Piper; CPU/offline). One ~310 MB
+# ONNX model + a ~27 MB voices file, downloaded once into iacore's kokoro_models/.
+# Best-effort: Piper and browser voices work without these.
+KOKORO_DIR="$CORE/kokoro_models"
+KOKORO_BASE="https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0"
+mkdir -p "$KOKORO_DIR"
+dl_kokoro() {
+    local name="$1"
+    if [ -f "$KOKORO_DIR/$name" ]; then ok "Kokoro '$name' already present."; return; fi
+    info "Downloading Kokoro '$name' ..."
+    if curl -fsSL "$KOKORO_BASE/$name" -o "$KOKORO_DIR/$name"; then
+        ok "Kokoro '$name' ready."
+    else
+        warn "Could not download Kokoro '$name'; add it to $KOKORO_DIR later (Piper still works)."
+        rm -f "$KOKORO_DIR/$name"
+    fi
+}
+dl_kokoro "kokoro-v1.0.onnx"
+dl_kokoro "voices-v1.0.bin"
+
 printf '\n'
 info 'Step 3/4 - Frontend dependencies (bun)'
 export PATH="$HOME/.bun/bin:$PATH"

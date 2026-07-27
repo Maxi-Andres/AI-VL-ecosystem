@@ -5,6 +5,13 @@ install and run the whole system. It **does not contain the app code** — the t
 app repos are independent (each its own `.git`) and are git-ignored here (see
 `.gitignore`); you clone them inside this folder.
 
+> **Robot control (Unitree G1 by voice):** see [`ROBOT_CONTROL.md`](ROBOT_CONTROL.md)
+> for the plan and environment. Installed on this machine: `unitree_sdk2`
+> (`~/Desktop/unitree_sdk2`, official SDK — **recommended transport**; has built-in
+> high-level locomotion so "walk here" needs no custom code), `unitree_ros2`
+> (`~/Desktop/unitree_ros2`, alternative ROS2 transport), and `LuckyEngine`
+> (`~/Documents/LuckyEngine`, G1 MuJoCo simulator — optional, for advanced grasping).
+
 ## Architecture
 
 Three independent apps that talk to each other **over the network (by port), never by

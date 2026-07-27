@@ -36,6 +36,34 @@ report — the user reviews and commits everything manually.
 HTTPS (`:8443`) serving the SPA + `/api` + `/ws` on one origin, and opens the
 server monitor (`/monitor`) in the local browser.
 
+## Robot control (Unitree G1) — read `ROBOT_CONTROL.md`
+
+There is an active goal to drive a **real Unitree G1** by voice through AI-VL.
+Locomotion is already solved by the SDK; the **long-term north star is voice-driven
+manipulation** ("lift the box onto the desk", "turn on the light switch", small
+everyday tasks) — built as a growing **skill library**, starting from easy
+grasp-and-place and escalating (mobile-manipulation, precise/contact tasks are harder).
+Two layers, don't confuse them: a **transport** (how to talk to the real robot) and
+**behaviors** (what it does). Three stacks are
+**already installed** on this machine as sibling projects — inspect them directly:
+
+- **`~/Desktop/unitree_sdk2`** — official Unitree **SDK** (recommended transport;
+  Python binding = `unitree_sdk2_python`). Ships a **high-level G1 loco client**
+  (`Move`, `StandUp`, `StopMove`, `WaveHand`, …) with balance/walk **built in**, plus
+  arm/hand clients and gamepad remote. Locomotion & gestures need **no** LuckyEngine.
+- **`~/Desktop/unitree_ros2`** — alternative ROS2 transport to the same robot
+  (`/lowcmd`, `/lowstate`, `/dex3/*/cmd`). Use only if you want the ROS2 ecosystem.
+- **`~/Documents/LuckyEngine`** — closed-engine MuJoCo **simulator** (NOT a transport,
+  never touches the real robot). Optional: reusable RL policies, grasp blueprint,
+  tuned offsets, sim test bench — mainly for advanced vision-guided grasping.
+
+The plan: AI-VL is the brain — STT (exists) + a VLM **command interpreter** (text →
+skill JSON) + **perception-3D** (YOLO bbox + depth + hand-eye → pelvis-frame pose) +
+a thin **skill executor**. **Locomotion/gestures = built-in SDK calls** (easy);
+**custom grasping = SDK arm/hand + own IK + AI-VL perception** (reuse LuckyEngine's
+grasp FSM/offsets as blueprint). STT/TTS/VLM/YOLO already exist here.
+**Full details, file pointers and roadmap: [`ROBOT_CONTROL.md`](ROBOT_CONTROL.md).**
+
 ## Skills
 
 - **`/cr`** — code review of all uncommitted changes across the four repos against
