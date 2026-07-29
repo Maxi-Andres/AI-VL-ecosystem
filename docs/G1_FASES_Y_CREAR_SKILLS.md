@@ -60,9 +60,64 @@
   Live: escribís o dictás un comando y te muestra el **skill elegido** + el **JSON
   exacto** que recibiría el robot (para verificar que elige bien, antes de mover nada).
 
-El intérprete cubre **toda la superficie del SDK**: `walk`, `turn`, `stop`,
+El intérprete cubre **toda la superficie documentada del SDK**: `walk`, `turn`, `stop`,
 `stand_up`, `balance_stand`, `sit`, `squat`, `high_stand`, `low_stand`, `damp`,
-`zero_torque`, `start`, `wave_hand`, `shake_hand`, `arm_action` (15 poses), `unknown`.
+`zero_torque`, `start`, `wave_hand`, `shake_hand`, `arm_action` (16 poses), `unknown`.
+Los gestos y `arm_action` **sólo corren en fsm id {500, 501, 801}** (o sea, después de
+`start` / "Preparation"); si no, el robot los rechaza con 7404 / 7303.
+
+**Secuencia real de arranque** (el G1 no camina si no pasás por los tres):
+
+```
+damp (FSM 1)  ->  stand_up / "Preparation" (FSM 4)  ->  start (500) | run (801) | walk_waist (501)
+```
+
+Procedencia de cada id: **`[robot]`** = lo publicó el robot (leído con
+`g1_fsm_watch.py`), **`[sdk]`** = está en los headers de esta máquina, **`[web]`** =
+documentado afuera del SDK y **sin** confirmar contra el robot.
+
+| Modo de la app | Skill | FSM id | Procedencia |
+|---|---|---|---|
+| Zero torque | `zero_torque` | 0 | `[sdk]` |
+| Damping | `damp` | 1 | `[sdk]` `[robot]` |
+| Squat | `squat` | 2 | `[sdk]` `[robot]` (completó 2 → 4) |
+| Seating | `sit` | 3 | `[sdk]` |
+| Preparation (y "squat up") | `stand_up` | 4 | `[sdk]` `[robot]` |
+| **Lie up** | `lie_up` | **702** | `[robot]` |
+| Main operation / walk, cintura 1-DoF | `start` | 500 | `[sdk]` `[web]` |
+| **Walk**, cintura 3-DoF | `walk_waist` | **501** | `[robot]` |
+| Run, cintura 1-DoF | `run` | 801 | `[web]` |
+| **Run**, cintura 3-DoF | `run_waist` | **802** | `[robot]` |
+| **Climb** | `climb` | **812** | `[robot]` |
+
+Los pares 500/501 y 801/802 son el **mismo** controlador para las dos variantes de
+cintura (1-DoF / 3-DoF): no es "walk + control de cintura", es el walk de cada robot, y
+el que no corresponde a la variante se rechaza con error 7302. **Nuestro robot contesta
+501/802, o sea es el de cintura 3-DoF.**
+
+Secuencia de arranque: `damp (1) → stand_up/Preparation (4) → walk (501) | run (802) | climb (812)`.
+
+Observado y **no** expuesto como skill: **706**, un estado de tránsito de ~6-7 s que el
+robot ocupa mientras se mueve entre una postura baja y parado (lo vimos en los dos
+sentidos, incluso en un squat de la app que se cayó y terminó en damping). No es una
+postura que se elija. En firmware viejo el "start locomotion" aparece como **200** en
+vez de 500; si 500 rebota, probá 200 con el skill crudo `set_fsm_id`.
+
+**Welcome no existe** en este firmware: `GetActionList` devuelve el subsistema del brazo
+**completo** (23 acciones numeradas + 4 rutinas por nombre) y ahí no está.
+
+Para descubrir un id nuevo, en el devcontainer:
+
+```
+bash /workspace/robot_executor/run_fsm_watch.sh --all
+```
+
+Es read-only (sólo publica api_ids `Get*`, no puede mover nada, ni siquiera al salir).
+Tocá cada opción en la app: cada estado nuevo se imprime y el que salga marcado
+`<-- NEW` es un id que todavía no tenemos. `--all` además imprime la lista de acciones
+de brazo que el robot declara. Ojo con dos cosas: sólo imprime **cambios** (si ya estás
+en ese modo, no sale nada) y el robot dice **en cuál** estado está, nunca cuáles tiene —
+la locomoción no tiene api de catálogo, a diferencia del brazo.
 
 ---
 
@@ -130,7 +185,7 @@ El intérprete **solo decide**. El **ejecutor** es el que mueve. Arranca una vez
 | `stop` | `loco.StopMove()` |
 | `stand_up`/`sit`/`squat`/`damp`/`zero_torque`/`start`/`balance_stand`/`high_stand`/`low_stand` | los métodos FSM del loco client (`StandUp()`, `Sit()`, …) |
 | `wave_hand` {turn} | `loco.WaveHand(turn)` |
-| `shake_hand` | `loco.ShakeHand()` |
+| `shake_hand` {on} | `loco.ShakeHand()` — **dos etapas**: `on=true` ofrece la mano (task 2), `on=false` la termina y baja el brazo (task 3) |
 | `arm_action` {action} | `arm.ExecuteAction(ARM_ACTION_IDS[action])` |
 
 **Dónde corre:** en una máquina en la **misma red DDS** que el robot (la onboard del

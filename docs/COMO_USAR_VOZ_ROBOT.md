@@ -39,7 +39,7 @@ cp /workspace/robot_executor/.env.example /workspace/robot_executor/.env   # sol
 source /workspace/setup.sh
 python3 /workspace/robot_executor/robot_executor_service.py
 ```
-Queda escuchando en `:8090`. Por default: **SAFE_MODE=on** (bloquea acrobacias) y **DRY_RUN=off** (mueve de verdad).
+Queda escuchando en `:8090`. Por default: **SAFE_MODE=on** (bloquea todo lo que puede hacer que el robot pierda el sostén) y **DRY_RUN=off** (mueve de verdad).
 
 ## 4) Usar
 En el navegador (página **Live** o **Monitor**), en el panel **"Robot command"**:
@@ -51,7 +51,12 @@ En el navegador (página **Live** o **Monitor**), en el panel **"Robot command"*
 > Primer test: `sentate` o `saludá`, con el perro en un espacio despejado.
 
 ## Seguridad
-- **SAFE_MODE**: bloquea flips / handstand / walk_upright. Para habilitarlos: `SAFE_MODE=false` en el `.env`.
+- **SAFE_MODE**: bloquea todo lo que puede hacer que el robot **pierda el sostén** o
+  le cambie el modo de control. Go2: flips / jump / pounce / handstand / walk_upright /
+  damp / dance1 / dance2. G1: damp / zero_torque / set_fsm_id / set_speed_mode /
+  switch_mode. La lista real vive en `DANGEROUS_SKILLS` de cada módulo del ejecutor
+  (espejo de `command_common` en iacore, que es lo que lee la UI). Para habilitarlos:
+  el toggle **Safe** de la página Drive, o `SAFE_MODE=false` en el `.env`.
 - **Probar sin mover**: arrancá el ejecutor con `DRY_RUN=true` (loguea el comando, no lo manda).
 - **Parar**: comando *"pará"* → `StopMove` inmediato. Los `walk`/`turn` acotados se frenan solos.
 

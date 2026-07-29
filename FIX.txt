@@ -46,6 +46,12 @@ LA ip que agarra por wireless no es la misma que cuando me conecto por cable? po
 
 verifica que funcionen todas las opciones que tienen para ejecutar ambos robots
 
+IMPORTANTE, CUANDO INICIA LA APP SE FIJA LA IP 123.161, ES LA bajo nivel de ambos robots, quiza intenta filtar por alto nivel? o algo asi
+
+que en el front tenga todas las fucniones que tiene la app poronga de unitree, tenes armado el watcher
+
+hay acciones que siguen sin funcionar fijate de arreglarlas y que ande todo
+
 --------------------------------------------------------------
 
 Done:
