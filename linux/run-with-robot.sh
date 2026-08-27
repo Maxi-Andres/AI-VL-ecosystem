@@ -11,7 +11,7 @@
 #    3) The robot_camera_bridge inside it (idle until the UI turns the stream on).
 #    4) A WATCHDOG that re-checks the executor + camera every few seconds and
 #       restarts either one if it stops answering — so a crash self-recovers.
-#    5) The AI-VL stack (iacore + backend HTTPS + monitor) on the host (blocks).
+#    5) The AI-VL stack (iacore + backend HTTPS + the app) on the host (blocks).
 #  Ctrl+C shuts everything down (watchdog + container processes + AI-VL stack).
 #
 #  Requirements: the Go2 connected over ethernet (DDS interface UP) so it actually
@@ -194,5 +194,5 @@ cleanup(){
 trap cleanup INT TERM EXIT
 
 # --- 6) AI-VL stack (blocks; Ctrl+C stops everything) ------------------------
-info "Starting AI-VL (iacore + backend + monitor). Ctrl+C stops EVERYTHING."
+info "Starting AI-VL (iacore + backend + the app). Ctrl+C stops EVERYTHING."
 bash "$AIVL_RUN"

@@ -33,8 +33,10 @@ report — the user reviews and commits everything manually.
 - The three app repos are cloned as sibling directories and git-ignored here.
 
 `run.sh` builds the frontend, then starts iacore (`:8001`) and the backend over
-HTTPS (`:8443`) serving the SPA + `/api` + `/ws` on one origin, and opens the
-server monitor (`/monitor`) in the local browser.
+HTTPS (`:8443`) serving the SPA + `/api` + `/ws` on one origin, and opens the app
+(`/`) in the local browser. There is no `/monitor` route any more — that page was
+folded into Live, which picks its source with "My camera" / "Robot camera" /
+"View only" (the last one is the old monitor).
 
 ## Robot control (Unitree G1) — read `ROBOT_CONTROL.md`
 

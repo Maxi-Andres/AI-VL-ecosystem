@@ -158,11 +158,13 @@ info "Starting backend HTTPS (:$HTTPS_PORT) serving the frontend ..."
 ) > >(sed -u 's/^/[backend] /') 2>&1 &
 pids+=($!)
 
-MONITOR_URL="https://localhost:$HTTPS_PORT/monitor"
+APP_URL="https://localhost:$HTTPS_PORT/"
 
-# --- 7) Open the MONITOR in this PC's browser --------------------------------
-# The monitor mirrors what the phone sees (video + detections) and lets you drive
-# the options from the server, WITHOUT streaming until you press "Activate". We
+# --- 7) Open the app in this PC's browser ------------------------------------
+# There is no separate /monitor page any more: it was folded into Live, which now
+# has a source picker — "My camera", "Robot camera", "View only". The last one is
+# the old monitor: a read-only mirror of whatever the phone is streaming. Nothing
+# is captured or streamed until you pick a source, so opening this is free. We
 # wait for the HTTPS backend to answer and then open it. Best-effort: with no
 # browser/graphical environment nothing happens (the URL is still printed below).
 open_browser() {
@@ -179,10 +181,10 @@ open_browser() {
         curl -k -fsS --max-time 2 "https://localhost:$HTTPS_PORT/api/health" >/dev/null 2>&1 && break
         sleep 0.5
     done
-    if [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && open_browser "$MONITOR_URL"; then
-        info "Monitor opened in the browser: $MONITOR_URL"
+    if [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && open_browser "$APP_URL"; then
+        info "App opened in the browser: $APP_URL"
     else
-        warn "Could not open the browser automatically. Open it by hand: $MONITOR_URL"
+        warn "Could not open the browser automatically. Open it by hand: $APP_URL"
     fi
 ) &
 
@@ -192,9 +194,10 @@ printf '\n'
 printf "  From the phone (same network/WiFi as the PC), open:\n"
 printf "        ${C_GRN}https://%s:%s${C_OFF}\n" "$ip" "$HTTPS_PORT"
 printf '\n'
-printf "  On THIS PC (monitor: view + control what the phone sees, streaming\n"
-printf "  nothing until you press 'Activate') it opens on its own, or open it by hand:\n"
-printf "        ${C_GRN}%s${C_OFF}\n" "$MONITOR_URL"
+printf "  On THIS PC the app opens on its own, or open it by hand:\n"
+printf "        ${C_GRN}%s${C_OFF}\n" "$APP_URL"
+printf "  Nothing is captured until you pick a source on the Live page. To watch what\n"
+printf "  the phone is streaming, press 'View only' (that is the old monitor).\n"
 printf '\n'
 printf "  The phone will warn 'connection not secure' (self-signed cert):\n"
 printf "    - Android/Chrome: 'Advanced' -> 'Continue'.\n"

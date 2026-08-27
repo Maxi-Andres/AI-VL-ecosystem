@@ -75,7 +75,7 @@ Consume it through the backend only (never call iacore). Typical touch points:
 ## 4. Verify end to end
 
 Bring the stack up with the ecosystem launcher (`linux/run.sh` or `win/run.ps1`):
-iacore on `:8001`, backend HTTPS on `:8443` serving the SPA + `/api` + `/ws`, and
-the `/monitor` page. Exercise the new path in the browser (or with `curl` against
+iacore on `:8001`, backend HTTPS on `:8443` serving the SPA + `/api` + `/ws`, and the
+app at `/`. Exercise the new path in the browser (or with `curl` against
 the backend), confirm the backend reaches iacore (`/api/health`), and check the
 data round-trips. Re-index so the graph shows the new cross-repo edge.

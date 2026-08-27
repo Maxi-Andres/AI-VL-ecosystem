@@ -178,9 +178,10 @@ Write-Host ''
 Write-Host "  From the phone (same network/WiFi as the PC), open:" -ForegroundColor White
 Write-Host "        https://$ip`:$httpsPort" -ForegroundColor Green
 Write-Host ''
-Write-Host "  On THIS PC (monitor: view + control what the phone sees, streaming" -ForegroundColor White
-Write-Host "  nothing until you press 'Activate'), open:" -ForegroundColor White
-Write-Host "        https://localhost:$httpsPort/monitor" -ForegroundColor Green
+Write-Host "  On THIS PC, open:" -ForegroundColor White
+Write-Host "        https://localhost:$httpsPort/" -ForegroundColor Green
+Write-Host "  Nothing is captured until you pick a source on the Live page. To watch what" -ForegroundColor White
+Write-Host "  the phone is streaming, press 'View only' (that is the old monitor)." -ForegroundColor White
 Write-Host ''
 Write-Host "  The phone will warn 'connection not secure' (self-signed cert):" -ForegroundColor Gray
 Write-Host "    - Android/Chrome: 'Advanced' -> 'Continue'." -ForegroundColor Gray
