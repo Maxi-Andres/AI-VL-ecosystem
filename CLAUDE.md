@@ -53,6 +53,10 @@ Two layers, don't confuse them: a **transport** (how to talk to the real robot) 
   arm/hand clients and gamepad remote. Locomotion & gestures need **no** LuckyEngine.
 - **`~/Desktop/unitree_ros2`** — alternative ROS2 transport to the same robot
   (`/lowcmd`, `/lowstate`, `/dex3/*/cmd`). Use only if you want the ROS2 ecosystem.
+  **This is what actually runs today**: the skill executor and the camera bridge live in this
+  fork and speak rclpy, not the SDK — the reverse of the recommendation above. Read
+  [`docs/TRANSPORT_SDK_VS_ROS2.md`](docs/TRANSPORT_SDK_VS_ROS2.md) before changing anything
+  in the transport layer, or before assuming the SDK path exists.
 - **`~/Documents/LuckyEngine`** — closed-engine MuJoCo **simulator** (NOT a transport,
   never touches the real robot). Optional: reusable RL policies, grasp blueprint,
   tuned offsets, sim test bench — mainly for advanced vision-guided grasping.

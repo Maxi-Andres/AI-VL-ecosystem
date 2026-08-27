@@ -94,6 +94,15 @@ features — don't assume, inspect the code.
 loco for movement/remote/gestures, and reserve LuckyEngine for advanced grasping / as a
 sim test bench.
 
+> **What is actually running is the ROS2 transport, not this one.** The Phase-2 executor
+> (`unitree_ros2/robot_executor/`) and the camera bridge were built on rclpy, because
+> `unitree_sdk2_python` is not installed on this machine and Unitree's devcontainer was
+> ready to use. So the order this document sets out — SDK now, ROS2 when Nav2 arrives — was
+> inverted in practice. The migration back, what the split costs today, and why it is an
+> addition rather than a rewrite: **[`docs/TRANSPORT_SDK_VS_ROS2.md`](docs/TRANSPORT_SDK_VS_ROS2.md)**.
+> Note also that §"The plan" below calls unitree_ros2 the execution layer while the diagram
+> under it draws the arrow through unitree_sdk2; that contradiction is unresolved.
+
 ### Reusable assets inside LuckyEngine
 
 - **Locomotion policies (ONNX, sim-to-real ready):**
