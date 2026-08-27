@@ -1,5 +1,13 @@
 # AI-VL code best practices (the /cr review standard)
 
+> **SUPERSEDED (2026-08-27).** The review standard now lives at
+> `~/Desktop/.claude/skills/cr/references/standard.md` and covers all 11 repos in the
+> workspace, not just the four here. It also fixes three statements below that had drifted
+> from the code: `service.py`/`app.py` now use typed Pydantic models (not `dict`),
+> `MonitorPage` no longer exists, and iacore's blocking-event-loop gap is largely resolved
+> (`run_in_threadpool` on the five heavy routes). Kept for reference; do not review against it.
+
+
 Curated for **this** ecosystem — not a generic checklist. Rules are grounded in the
 actual code (a stateless single-file backend gateway, a modular `src/` iacore, a
 React-hooks frontend). Skip anything that doesn't apply to a small PoC (no DB

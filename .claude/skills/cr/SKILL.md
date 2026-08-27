@@ -44,8 +44,10 @@ each file's repo — the rules differ per repo.
 
 ## 3. Review against the layered checklist
 
-Load **`references/best-practices.md`** (in this skill dir) — it is the review
-standard, with per-repo rules and severities. Apply, in order:
+Load **`~/Desktop/.claude/skills/cr/references/standard.md`** — that is the review
+standard now, and it covers all 11 repos in the workspace. The local
+`references/best-practices.md` is SUPERSEDED (it described three problems that are already
+fixed); read it only for history. Apply the standard's §10 order:
 
 1. **Ecosystem directives (blocking):** English-only (+ `FIX.txt` exception in
    core), no `git commit`/`push` introduced, the network-by-port boundary (no
