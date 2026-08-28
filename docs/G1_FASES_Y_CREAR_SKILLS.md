@@ -1,16 +1,19 @@
 # Unitree G1 por voz — cómo funciona, las fases, y cómo crear skills nuevas
 
-> Narrativa en español (Rioplatense), **fuera de los repos AI-VL**. Complementa a:
-> - `~/Desktop/CONTROL_POR_VOZ_G1.md` — el "qué/por qué" general.
-> - `~/Desktop/AI-VL-ecosystem/ROBOT_CONTROL.md` — la **fuente de verdad in-repo** (inglés).
+> **Este documento es un how-to, no un backlog.** Su valor son las secciones 4 y 5: cómo
+> **agregar comandos nuevos fáciles** (los que son puro SDK) y cómo se **crean skills de
+> manipulación** de verdad ("levantá la pelota / la caja"), evaluando **NVIDIA Isaac** y si
+> **con el SDK alcanza**.
 >
-> Este documento agrega tres cosas: (1) cómo quedó armado **lo que ya construimos**,
-> (2) cómo **agregar comandos nuevos fáciles** (los que son puro SDK), y (3) cómo se
-> **crean skills de manipulación** de verdad ("levantá la pelota / la caja"),
-> evaluando **NVIDIA Isaac** y si **con el SDK alcanza**.
+> - Qué hacer y en qué orden, con el estado verificado de cada fase →
+>   **`~/Desktop/.claude/ROADMAP.md`** §6. La §2 de acá quedó como contexto histórico; si
+>   difieren, gana ROADMAP.md.
+> - Diseño técnico y fórmulas → `~/Desktop/AI-VL-ecosystem/ROBOT_CONTROL.md`.
+> - El puntero a `~/Desktop/CONTROL_POR_VOZ_G1.md` que había acá quedó muerto en el renombre
+>   del 27-08 y ese archivo se borró el 28-08 por duplicar a `ROBOT_CONTROL.md`.
 >
-> Fecha: 2026-07-20. Ojo: la parte de Isaac/GR00T/LeRobot se mueve muy rápido;
-> abajo pongo versiones y links para re-chequear.
+> Fecha: 2026-07-20, punteros corregidos el 2026-08-28. Ojo: la parte de
+> Isaac/GR00T/LeRobot se mueve muy rápido; abajo pongo versiones y links para re-chequear.
 
 ---
 

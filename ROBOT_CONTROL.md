@@ -1,12 +1,16 @@
 # Robot control — Unitree G1 via voice (design + environment)
 
-Authoritative note for future Claude Code sessions. Explains **what robot tooling is
-installed on this machine**, **where it lives**, and **the plan** to make the Unitree
-G1 obey spoken commands ("grab the red can", "walk") using AI-VL as the brain.
+**Technical design reference** for the G1 voice-control track: what robot tooling is
+installed on this machine, where it lives, the pieces to build and the formulas/clients
+each one needs.
 
-> English only (repo convention). A Spanish narrative version for the user lives
-> outside the repos at `~/Desktop/CONTROL_POR_VOZ_G1.md` — keep this English file as
-> the source of truth for code work.
+> **This file is NOT the backlog.** What to do and in what order — for both robots, with
+> the verified state of each phase — lives in **`~/Desktop/.claude/ROADMAP.md`** §6. Keep
+> this file for the *how*: symbol tables, formulas, SDK client names, and the inventory of
+> what must not be rebuilt. If the two disagree about status, ROADMAP.md wins.
+>
+> The Spanish narrative version that used to sit at `~/Desktop/CONTROL_POR_VOZ_G1.md` was
+> deleted on 2026-08-28 — it duplicated this file's roadmap. It is in git history.
 
 ## Goal
 
@@ -186,9 +190,10 @@ translates the spoken command into it, then that skill is executed through ROS2.
 ## Layered reference architecture (north star)
 
 A full-system reference for the compound-instruction G1 ("grab that box and take it to
-the kitchen") lives at [`../ARQUITECTURA_ROBOT_G1_PROPUESTA.md`]. It is the **north
-star**, reached incrementally through the phases below; it is **G1-only** (SONIC/GR00T
-are G1 embodiments). Its layers map to our phases:
+the kitchen") lives at
+[`docs/ARQUITECTURA_ROBOT_G1_PROPUESTA.md`](docs/ARQUITECTURA_ROBOT_G1_PROPUESTA.md). It is
+the **north star**, reached incrementally through the phases below; it is **G1-only**
+(SONIC/GR00T are G1 embodiments). Its layers map to our phases:
 
 | Reference layer | Our phase(s) |
 |---|---|
