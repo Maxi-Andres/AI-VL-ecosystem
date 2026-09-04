@@ -4,9 +4,7 @@ deactivate                   # salis de el venv
 
 To do:
 
-- poner una base de datos para que la ia pueda tener mas contexto o cosas para las prompts
-
-nueva tab para controlar movimiento de robot como hace el shoystick
+- poner una base de datos para que la ia pueda tener mas contexto o cosas para las prompts (que pueda sacar foto de la gente y guardar un json por ejemplo o despues una base de datos rapida para R y W, y que pueda buscar ahi la info, tipo foto de una persona con descripcion y nombre y que pueda ver quien es)
 
 despues en la version final hay que implementar que solo este el modo de voz y que el sepa elegir si es una accion o si es una pregunta, y si tiene o no que usar las imagenes de la camara, ya sea para una accion o para una pregunta.
 
@@ -24,7 +22,7 @@ no anda lo de que si le decis "camina para adelante un segundo" lo haga por un s
 
 que el SELECCIONAR el robot que estas usando sea mas obvio
 
-que tenga una pill arriba que ponga si el robot esta conectado tipo robot online, y podria incluso el disernir cual es o algo asi
+Ver que onda eso de YOLO world que supuestamente puede entender todo, tambien probar la de nvdia cosmos era creo
 
 cambiar la estructura de vlm por que no se entiende mucho
 
@@ -33,8 +31,6 @@ ver como implementar el microfono y los parlantes de el robot, ver todas las opc
 rtsp? usar algun protocolo o algo para que sea mas rapido
 
 CUANDO ESTA EL SAFE OFFF TIENE QUE ESTAR EN ROJO, y cuando esta on, te tiene que poner los botones peligrosos en diabled
-
-te tiene que dejar elegir el robot y cambiar los botones, que el robot se cambie globalemente desde el header, corregir lo de la pill eso pone conected cuando muestra la camara de live
 
 sacar los frames van a el back para despues lo de yolo, , o que en el drive sean directos los frames sin latencia
 
@@ -106,6 +102,12 @@ dividir en dos las opciones por que es muy largo ya que cambies de pagina, yolo,
 que se pueda agrandar la pantalla de el robot tambien a pantalla completa y que sea un poco mas chica
 
 que se pueda activar y desactivar yolo tambien con un switch y que sea para el el que sea que sea el video, ya sea live o el video de el robot
+
+nueva tab para controlar movimiento de robot como hace el shoystick
+
+que tenga una pill arriba que ponga si el robot esta conectado tipo robot online, y podria incluso el disernir cual es o algo asi
+
+te tiene que dejar elegir el robot y cambiar los botones, que el robot se cambie globalemente desde el header, corregir lo de la pill eso pone conected cuando muestra la camara de live
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
