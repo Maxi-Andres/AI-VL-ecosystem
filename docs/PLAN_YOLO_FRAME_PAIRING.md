@@ -1,8 +1,35 @@
 # Plan — YOLO must never slow the drive view, and boxes must match their frame
 
-**Status: designed, NOT implemented.** Written 2026-09-16 from a live session with the Go2 on
-LTE, two machines attached (one on `/drive`, one on `/live`). Every number here is measured,
-not estimated; the method is next to each one.
+**Status: §4 items 1-5 BUILT and proven 2026-09-22; items 6-7 still designed only.** Written
+2026-09-16 from a live session with the Go2 on LTE, two machines attached (one on `/drive`, one
+on `/live`). Every number here is measured, not estimated; the method is next to each one.
+
+> ### What landed 2026-09-22 — the backend half, with no robot involved
+>
+> `POST /api/detect` (bounded at 2 MB), `Conn.wants_boxes`, `Hub.wants_boxes()` /
+> `fanout_raw()` / `fanout_annotated()`, and a `ws_robot_cam` that **fans out raw first and
+> never awaits detection** — at most one in flight, later frames skipped. Plus item 5:
+> `useRobotCameraView` now sends `{ boxes }` (per connection) instead of `{ enabled }`
+> (shared), so `/drive` can no longer switch detection off for `/live`.
+>
+> Proof is in `AI-VL-backend/tests/test_yolo_frame_pairing.py` — 7 tests, no network, no GPU,
+> no robot: iacore is stubbed by a fake that can be held open mid-detection, which is what
+> makes "the raw path did not wait" observable instead of merely asserted.
+>
+> **The tests were checked by breaking the code on purpose**, because a green suite proves
+> nothing about a bug it cannot see:
+>
+> | mutation applied to `app.py` | what went red |
+> |---|---|
+> | put the awaited detection back in the producer | `raw_viewer_gets_the_frame_before_detection_resolves` (3.4 s, fails — does not hang) |
+> | remove the one-in-flight cap | `annotated_frame_is_the_one_that_was_detected`, `second_frame_is_skipped_while_a_detection_is_in_flight` |
+> | gate the producer on shared `enabled` again | those two plus `raw_viewer_gets_the_frame...` |
+>
+> **Items 6-7 (pair in the BROWSER for the H.264 transport) were deliberately NOT built**, and
+> not for lack of time: §7 below, requested the same day, says the analysed frame must follow
+> the live selection for the VLM too, and warns that solving it once per consumer produces two
+> frame-grab paths that drift. Building §3.2 now means building the half that §7 replaces.
+> Design them together.
 
 > Written in English because this repo's `CLAUDE.md` declares English for everything except
 > `AI-VL-core/FIX.txt`. Say the word and it moves to Spanish as a declared exception.
@@ -183,3 +210,69 @@ it found. Point it at the drive-class viewer and the number must not move when Y
 
 Robot-side video numbers and link state for the same session live in
 `robot-ecosystem/robot-splunk-docs/MEDICIONES.md`.
+
+---
+
+## 7. Requested 2026-09-22 — every consumer analyses THE PICTURE ON SCREEN
+
+**Status: requested, not designed.** Raised by the operator while §1-§6 were being built, and it
+is a superset of §2.3 rather than a separate wish: *"quiero poder elegir qué imagen usa YOLO,
+tiene que ser la que está seleccionada en el live, y eso para todo igual, para VLM también."*
+
+### What it asks for
+
+Today **the source of the analysed frame is fixed in the code, not chosen by the operator**.
+`/live` lets you pick a transport (MJPEG or H.264/WHEP), and that choice moves only the
+PICTURE. Every consumer keeps eating the bridge's MJPEG whatever is on screen:
+
+| consumer | what it analyses today | where |
+|---|---|---|
+| YOLO (live path) | always the bridge MJPEG | `app.py` `ws_robot_cam` → `_detect` |
+| VLM ("ask about this frame") | always the bridge MJPEG | `useRobotCameraView.getLastFrameBlob()` |
+| YOLO (phone path) | the phone's own camera | `/ws/detect` — correct already, different producer |
+
+So with H.264 selected the operator is looking at one picture and asking questions about
+another. §2.3 measured that gap at **260 ms** for the boxes; for the VLM it is worse in kind,
+because a VLM answer describes a frame nobody ever saw and nothing on screen contradicts it.
+
+### The requirement, stated so it can be tested
+
+1. The transport selected in `/live` is the **single source of truth** for what gets analysed.
+2. YOLO boxes describe that picture. (§3.2 already gets this right for the H.264 case; the
+   point here is that it stops being a special case and becomes the rule.)
+3. The VLM is asked about **that same picture** — the frame the operator is looking at when
+   they press the button, not the freshest MJPEG blob the hook happens to hold.
+4. Switching transport switches every consumer with it, with no reconnect and no stale frame
+   surviving the switch.
+5. `/drive` is unaffected, exactly as in §1.
+
+### Why it is not just "do §3.2 twice"
+
+§3.2 pairs YOLO against the WHEP `<video>` inside `LivePage`. Doing the same for the VLM would
+put a second frame-grab path in a second component, and the two would drift. The shape that
+does not rot is **one grab, many consumers**: a single "current displayed frame" source in the
+live page — whichever transport produced it — that both the detection pairing and
+`getLastFrameBlob()` read from. `useRobotCameraView` already owns `lastBlobRef` for the MJPEG
+case; the H.264 case needs the same thing fed from a canvas grab, behind the same accessor, so
+callers never learn which transport they are on.
+
+### ✅ SETTLED 2026-09-22 — ONE selector. What you see is what gets analysed.
+
+Asked whether the analysis source should be selectable apart from the displayed one, the
+operator answered: *"yo diría que sea un solo selector, lo mismo que ves en la pantalla."*
+
+So this is a decision, not an open question, and it is the cheaper half of the fork:
+
+* There is **no per-consumer source setting**, no "analyse MJPEG while showing H.264", and no
+  second dropdown anywhere in the UI. Anything that offers one is out of scope.
+* The transport selector in `/live` is the ONLY input. YOLO and the VLM follow it; neither has
+  a source of its own to disagree with.
+* That makes "the boxes describe another picture" and "the VLM answered about a frame nobody
+  saw" **unrepresentable** rather than merely avoided — there is no state in which the
+  displayed frame and the analysed frame can differ, so no test has to police the gap.
+* Practical consequence for the build: `getLastFrameBlob()` and the detection pairing must
+  read the SAME "current displayed frame", fed by whichever transport is active. One grab,
+  many consumers. A caller must never be able to learn which transport it is on — if it can,
+  the two paths will drift again the first time someone adds a third consumer.
+
+The measurement in §6 applies unchanged: whatever is built, `/drive`'s latency must not move.
