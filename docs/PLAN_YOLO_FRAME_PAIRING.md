@@ -1,6 +1,7 @@
 # Plan — YOLO must never slow the drive view, and boxes must match their frame
 
-**Status: §4 items 1-5 BUILT and proven 2026-09-22; items 6-7 still designed only.** Written
+**Status: §4 items 1-5 BUILT and proven 2026-09-22; items 6-7 and §7 BUILT 2026-10-07 (not yet
+verified against the robot — §5).** Written
 2026-09-16 from a live session with the Go2 on LTE, two machines attached (one on `/drive`, one
 on `/live`). Every number here is measured, not estimated; the method is next to each one.
 
@@ -30,6 +31,37 @@ on `/live`). Every number here is measured, not estimated; the method is next to
 > the live selection for the VLM too, and warns that solving it once per consumer produces two
 > frame-grab paths that drift. Building §3.2 now means building the half that §7 replaces.
 > Design them together.
+
+> ### What landed 2026-10-07 — items 6-7 and §7, together, as §7 asked
+>
+> Three transports exist now, not two: `mjpeg`, `h264` (WebRTC off mediamtx) and `intra` (the
+> robot's all-intra H.264, painted on a canvas by WebCodecs). The rule that came out of §7:
+>
+> | transport | who pairs a frame with its boxes | view socket `boxes` |
+> |---|---|---|
+> | `mjpeg` | the backend (items 1-4, unchanged) | `true` while YOLO is on |
+> | `h264`, `intra` | **this page**: grab what is on screen → `POST /api/detect` → show THAT grab with its boxes | `false` — the backend does not detect for us at all |
+>
+> * `lib/framePairing.ts` — the loop, DOM-free: one detection in flight, never a queue, no
+>   pair delivered after stop(), survives a failed detection, honours the max-fps cap.
+>   5 tests in `framePairing.test.ts`. ⚠️ Its injected `sleep` MUST yield a macrotask: a fake
+>   that resolved instantly turned the loop into a microtask spin that hung the machine during
+>   the first run; the loop now always sleeps (0 ms = one macrotask) between cycles.
+> * `lib/capture.ts` — the ONE reader of "the picture on screen", `<video>` or `<canvas>`:
+>   `snapshotFrame` (what is shown), `encodeFrame` (what is sent, encoded FROM the snapshot,
+>   at `imgsz`), `captureFrame` (the VLM's data URL).
+> * `RobotCameraStage` — `videoElRef` (the page can grab the WebRTC video) and `still` (the
+>   held grab replaces the live picture; the live element stays mounted at opacity 0 so the
+>   next grab can still read it). Also fixed on the way: the overlay never took the intra
+>   canvas's size, so boxes on it would have been laid out on a 1280x960 default.
+> * `LivePage` — `pairsLocally` picks the pairing side by transport; the VLM's
+>   `getCurrentFrame` reads the SAME shown frame (the held grab while YOLO is on), so a VLM
+>   answer can no longer describe a frame nobody saw. `/drive` untouched.
+>
+> **Why it matters more now than when §7 was written:** since 2026-10-07 the bridge reads the
+> Go2 over WHEP with SRT `latency=900`, so the backend's MJPEG frames arrive ~1 s late while
+> the intra picture arrives in ~95 ms. Server-side boxes on the intra view would have been
+> ~0.9 s BEHIND the person — the §2.3 bug, inverted and four times bigger.
 
 > Written in English because this repo's `CLAUDE.md` declares English for everything except
 > `AI-VL-core/FIX.txt`. Say the word and it moves to Spanish as a declared exception.
@@ -179,9 +211,9 @@ the drive machine's screen, replacing the robot picture. A detect-only endpoint 
 **Frontend**
 
 5. `ControlPage.tsx` — declare `boxes: false`, stop seeding `enabled`.
-6. `LivePage.tsx` — with MJPEG, subscribe as an annotated viewer (server pairs). With H.264 and
-   YOLO on, pair locally against the WHEP `<video>` through `POST /api/detect`.
-7. `RobotCameraStage.tsx` — expose the video element ref so the page can grab from it, and
+6. ✅ `LivePage.tsx` — with MJPEG, subscribe as an annotated viewer (server pairs). With H.264
+   (or intra) and YOLO on, pair locally through `POST /api/detect`.
+7. ✅ `RobotCameraStage.tsx` — expose the video element ref so the page can grab from it, and
    render the analysed still instead of the live video while YOLO is on.
 
 **Tests** (each names the bug it catches)
