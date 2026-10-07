@@ -1,7 +1,9 @@
 # Plan — YOLO must never slow the drive view, and boxes must match their frame
 
-**Status: §4 items 1-5 BUILT and proven 2026-09-22; items 6-7 and §7 BUILT 2026-10-07 (not yet
-verified against the robot — §5).** Written
+**Status: §4 items 1-5 BUILT and proven 2026-09-22; items 6-7 and §7 BUILT 2026-10-07 and
+confirmed working by the operator on the Go2 the same day. §5's latency check MEASURED the same
+day: `/drive` (intra) p50/p95 92/116 ms with YOLO on in `/live` against 90/117 with it off —
+unmoved (one 30 s window with YOLO on; robot-splunk-docs/MEDICIONES.md 2026-10-07 14:21).** Written
 2026-09-16 from a live session with the Go2 on LTE, two machines attached (one on `/drive`, one
 on `/live`). Every number here is measured, not estimated; the method is next to each one.
 
