@@ -28,6 +28,7 @@ on `/live`). Every number here is measured, not estimated; the method is next to
 > | remove the one-in-flight cap | `annotated_frame_is_the_one_that_was_detected`, `second_frame_is_skipped_while_a_detection_is_in_flight` |
 > | gate the producer on shared `enabled` again | those two plus `raw_viewer_gets_the_frame...` |
 >
+> **Superseded 2026-10-07: items 6-7 and §7 are now built** (see Status above). Kept for the record:
 > **Items 6-7 (pair in the BROWSER for the H.264 transport) were deliberately NOT built**, and
 > not for lack of time: §7 below, requested the same day, says the analysed frame must follow
 > the live selection for the VLM too, and warns that solving it once per consumer produces two
@@ -249,7 +250,7 @@ Robot-side video numbers and link state for the same session live in
 
 ## 7. Requested 2026-09-22 — every consumer analyses THE PICTURE ON SCREEN
 
-**Status: requested, not designed.** Raised by the operator while §1-§6 were being built, and it
+**Status: BUILT 2026-10-07** (`lib/framePairing.ts` + `/api/detect` for YOLO, `lib/capture.ts` for the VLM) and confirmed by the operator on the Go2. Originally raised by the operator while §1-§6 were being built, and it
 is a superset of §2.3 rather than a separate wish: *"quiero poder elegir qué imagen usa YOLO,
 tiene que ser la que está seleccionada en el live, y eso para todo igual, para VLM también."*
 
