@@ -1,5 +1,10 @@
 # Unitree G1 por voz — cómo funciona, las fases, y cómo crear skills nuevas
 
+> **2026-10-13:** el plan vigente para GR00T en el G1 es `~/Desktop/.claude/roadmap/G1-GROOT.md`
+> (investigado ese día, con el robot leído por DDS). Lo de GR00T acá es contexto de agosto; si
+> difieren, gana ese plan. En particular: el camino recomendado NO es SONIC sino `rt/arm_sdk` +
+> Dex3 con PC1 caminando, y N1.7 en Jetson pide JetPack 7.2.
+
 > **Este documento es un how-to, no un backlog.** Su valor son las secciones 4 y 5: cómo
 > **agregar comandos nuevos fáciles** (los que son puro SDK) y cómo se **crean skills de
 > manipulación** de verdad ("levantá la pelota / la caja"), evaluando **NVIDIA Isaac** y si

@@ -1,5 +1,10 @@
 # Arquitectura propuesta: Unitree G1 ejecutando instrucciones complejas en lenguaje natural
 
+> **2026-10-13:** el plan vigente para GR00T en el G1 es `~/Desktop/.claude/roadmap/G1-GROOT.md`
+> (investigado ese día, con el robot leído por DDS). Lo de GR00T acá es contexto de agosto; si
+> difieren, gana ese plan. En particular: el camino recomendado NO es SONIC sino `rt/arm_sdk` +
+> Dex3 con PC1 caminando, y N1.7 en Jetson pide JetPack 7.2.
+
 > **Propósito de este documento:** este README resume una arquitectura de referencia discutida para un robot Unitree G1 físico que debe ejecutar instrucciones compuestas en lenguaje natural (ejemplo guía: *"agarra esa caja y llévala a la cocina"*). Está pensado para que otra instancia de Claude lo use como punto de comparación frente a un diseño o código ya existente del usuario, y señale coincidencias, huecos o contradicciones.
 
 ---
