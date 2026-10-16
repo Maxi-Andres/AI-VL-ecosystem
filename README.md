@@ -27,6 +27,10 @@ because Ollama runs the vision encoder on the CPU (~6.5 s per photo instead of ~
 Ollama (:11434) stays installed: it ships the llama-server binary and is the fallback
 (`VLM_BACKEND=ollama ./run.sh`). Details and measurements: `AI-VL-core/README.md`.
 
+What every piece is, what it does, why it was chosen and what the alternatives are:
+[`docs/TECH_STACK.md`](docs/TECH_STACK.md). The measured model choices:
+[`AI-VL-core/docs/MODEL_BENCHMARKS.md`](AI-VL-core/docs/MODEL_BENCHMARKS.md).
+
 - **iacore** (`AI-VL-core`) — inference core: YOLO + VLM and the heavy deps
   (torch/ultralytics). Exposes `service:app` on `:8001`.
 - **backend** (`AI-VL-backend`) — gateway the browser connects to (WS for the video

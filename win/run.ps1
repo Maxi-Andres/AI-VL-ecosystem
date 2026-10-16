@@ -158,11 +158,15 @@ for ($i = 0; $i -lt 15; $i++) {
 $asrModel   = if ($env:ASR_MODEL)        { $env:ASR_MODEL }        else { 'base' }
 $asrDevice  = if ($env:ASR_DEVICE)       { $env:ASR_DEVICE }       else { 'cpu' }
 $asrCompute = if ($env:ASR_COMPUTE_TYPE) { $env:ASR_COMPUTE_TYPE } else { 'int8' }
+# The VLM: Linux serves it with a llama-server (linux/vlm-server.sh, vision on the GPU)
+# that this script does not start yet, while config.json says vlm_backend = "llamacpp".
+# Pin Ollama here, or iacore would send every question to a dead :8081.
+$vlmBackend = if ($env:VLM_BACKEND)      { $env:VLM_BACKEND }      else { 'ollama' }
 # Neural text-to-speech (Piper) default voice; override with TTS_VOICE=<name>.
 $ttsVoice   = if ($env:TTS_VOICE)        { $env:TTS_VOICE }        else { 'es_AR-daniela-high' }
 Info 'Starting iacore (:8001) ...'
 # Quote each `set` assignment so values with spaces don't break the cmd chain.
-$iacoreCmd = "title AI-VL iacore :8001 & set `"ASR_MODEL=$asrModel`" & set `"ASR_DEVICE=$asrDevice`" & set `"ASR_COMPUTE_TYPE=$asrCompute`" & set `"TTS_VOICE=$ttsVoice`" & .venv\Scripts\python.exe -m uvicorn service:app --host 0.0.0.0 --port 8001"
+$iacoreCmd = "title AI-VL iacore :8001 & set `"ASR_MODEL=$asrModel`" & set `"ASR_DEVICE=$asrDevice`" & set `"ASR_COMPUTE_TYPE=$asrCompute`" & set `"TTS_VOICE=$ttsVoice`" & set `"VLM_BACKEND=$vlmBackend`" & .venv\Scripts\python.exe -m uvicorn service:app --host 0.0.0.0 --port 8001"
 Start-Process cmd.exe -ArgumentList '/k',$iacoreCmd -WorkingDirectory $coreDir
 
 # --- 7) backend HTTPS (:8443), serves the SPA + /api + /ws on one origin ------

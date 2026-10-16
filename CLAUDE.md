@@ -39,6 +39,10 @@ and the backend over HTTPS (`:8443`) serving the SPA + `/api` + `/ws` on one ori
 folded into Live, which picks its source with "My camera" / "Robot camera" /
 "View only" (the last one is the old monitor).
 
+**What we use and why** (every technology, its job, the alternatives, known gaps):
+[`docs/TECH_STACK.md`](docs/TECH_STACK.md). Update it when a technology is added, swapped or
+dropped.
+
 ## Robot control (Unitree G1) — read `ROBOT_CONTROL.md`
 
 There is an active goal to drive a **real Unitree G1** by voice through AI-VL.
