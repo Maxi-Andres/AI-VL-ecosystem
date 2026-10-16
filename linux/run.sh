@@ -167,11 +167,21 @@ APP_URL="https://localhost:$HTTPS_PORT/"
 # is captured or streamed until you pick a source, so opening this is free. We
 # wait for the HTTPS backend to answer and then open it. Best-effort: with no
 # browser/graphical environment nothing happens (the URL is still printed below).
+#
+# DETACHED, in a session of its own (setsid). Started as a plain background job, a browser that
+# was not already running became part of THIS terminal's process group — so the Ctrl+C that
+# stops the stack (or closing the terminal: SIGHUP) reached it too, and it quit with every tab
+# the user had open (2026-10-16). setsid takes it out of the group and the session, so no
+# signal meant for these services can reach it.
+detached() {
+    if have setsid; then setsid -f "$@" >/dev/null 2>&1 </dev/null
+    else nohup "$@" >/dev/null 2>&1 </dev/null & fi
+}
 open_browser() {
     local url="$1"
-    if have xdg-open;        then xdg-open        "$url" >/dev/null 2>&1 &
-    elif have gio;           then gio open        "$url" >/dev/null 2>&1 &
-    elif have sensible-browser; then sensible-browser "$url" >/dev/null 2>&1 &
+    if have xdg-open;        then detached xdg-open        "$url"
+    elif have gio;           then detached gio open        "$url"
+    elif have sensible-browser; then detached sensible-browser "$url"
     else return 1; fi
 }
 (
