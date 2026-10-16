@@ -3,8 +3,12 @@
 Scripts to install and run the system on Linux (equivalents of `../win/`). The flow is:
 
 ```
-frontend (phone) → backend (:8443 HTTPS) → iacore (:8001) → Ollama (:11434, model)
+frontend (phone) → backend (:8443 HTTPS) → iacore (:8001) → llama-server (:8081, VLM)
 ```
+
+`vlm-server.sh` serves the VLM with its vision encoder on the GPU; Ollama runs that part on
+the CPU (~6.5 s per photo instead of ~0.6 s). Ollama stays installed as the fallback and as
+the source of the llama-server binary.
 
 The three repos (`AI-VL-core`, `AI-VL-backend`, `AI-VL-frontend`) go in this folder's
 parent (the ecosystem root). The scripts auto-detect the repo root, so you can keep
@@ -19,13 +23,16 @@ chmod +x linux/install.sh linux/run.sh
 ```
 
 1. **`./linux/install.sh`** — once (or when switching machines). Installs Python 3 /
-   Bun / Ollama if missing, creates the venvs, runs `bun install` and pulls the Ollama
-   model. It does NOT auto-elevate: it installs into your home and only asks for `sudo`
+   Bun / Ollama if missing, creates the venvs, runs `bun install`, pulls the Ollama
+   model and downloads the VLM's GGUF files into `AI-VL-core/vlm_models/` (~3.3 GB; an
+   interrupted download resumes on the next run). It does NOT auto-elevate: it installs into your home and only asks for `sudo`
    when the installer needs it (distro packages, or Ollama's official script).
 
 2. **`./linux/run.sh`** — brings everything up in **phone mode (HTTPS)** so you can use
-   the phone as a camera. It builds the frontend and starts iacore + backend over
-   HTTPS. Then, from the phone (same network/WiFi):
+   the phone as a camera. It builds the frontend and starts the VLM server, iacore and
+   the backend over HTTPS (the VLM server only when iacore's `vlm_backend` is
+   `"llamacpp"`; `VLM_BACKEND=ollama ./linux/run.sh` skips it). Its log goes to
+   `/tmp/ai-vl-vlm-server.log`. Then, from the phone (same network/WiFi):
 
    ```
    https://<YOUR-PC-IP>:8443
@@ -71,11 +78,13 @@ case allow `8443/tcp` manually if the phone can't connect.
 |---------|------|-------|
 | iacore  | 8001  | Local HTTP (YOLO/VLM detection) |
 | backend | 8443  | HTTPS (phone mode); serves the frontend on a single origin |
-| Ollama  | 11434 | model `qwen3-vl:4b-instruct` |
+| VLM server | 8081 | llama-server, localhost only; lives exactly as long as `run.sh` |
+| Ollama  | 11434 | fallback VLM (`qwen3-vl:4b-instruct`) |
 
 ## Shutting down
 
-`Ctrl+C` in the terminal running `run.sh` shuts iacore and backend down together.
+`Ctrl+C` in the terminal running `run.sh` shuts the VLM server, iacore and the backend
+down together, which also frees the VLM's VRAM.
 
 ## If the phone won't connect
 

@@ -18,9 +18,14 @@ Three independent apps that talk to each other **over the network (by port), nev
 file path** (each one can run on a different machine):
 
 ```
-frontend (phone)  →  backend (:8443 HTTPS)  →  iacore (:8001)  →  Ollama (:11434, model)
-   browser UI           gateway / API+WS        YOLO + VLM          qwen3-vl:4b-instruct
+frontend (phone)  →  backend (:8443 HTTPS)  →  iacore (:8001)  →  llama-server (:8081, VLM)
+   browser UI           gateway / API+WS        YOLO + VLM          Qwen3-VL 4B, vision on GPU
 ```
+
+The VLM is served by a llama-server that `run.sh` starts with the app (`linux/vlm-server.sh`),
+because Ollama runs the vision encoder on the CPU (~6.5 s per photo instead of ~0.6 s).
+Ollama (:11434) stays installed: it ships the llama-server binary and is the fallback
+(`VLM_BACKEND=ollama ./run.sh`). Details and measurements: `AI-VL-core/README.md`.
 
 - **iacore** (`AI-VL-core`) — inference core: YOLO + VLM and the heavy deps
   (torch/ultralytics). Exposes `service:app` on `:8001`.
@@ -65,7 +70,8 @@ git clone https://github.com/Maxi-Andres/AI-VL-frontend.git  AI-VL-frontend
 |---------|------|-------|
 | iacore  | 8001  | Local HTTP (YOLO/VLM detection) |
 | backend | 8443  | HTTPS (phone mode); serves the frontend on a single origin |
-| Ollama  | 11434 | model `qwen3-vl:4b-instruct` |
+| VLM server | 8081 | llama-server, localhost only; started and stopped by `run.sh` |
+| Ollama  | 11434 | fallback VLM (`qwen3-vl:4b-instruct`) |
 
 ## Quick start
 

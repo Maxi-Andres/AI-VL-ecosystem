@@ -115,26 +115,27 @@ echo "  AI-VL : installing dependencies (Linux)"
 echo "============================================================"
 printf '\n'
 
-info 'Step 1/4 - Base tools (Python, Bun, Ollama)'
+info 'Step 1/5 - Base tools (Python, Bun, Ollama)'
 ensure_python
 ensure_bun
 ensure_ollama
 have python3 || die "python3 not found. Install it and re-run ./install.sh."
 
 printf '\n'
-info 'Step 2/4 - Python dependencies (iacore + backend)'
+info 'Step 2/5 - Python dependencies (iacore + backend)'
 setup_py_project "$CORE"    'AI-VL-core (iacore)'
 setup_py_project "$BACKEND" 'AI-VL-backend'
 
 # Pre-download the Whisper (speech-to-text) weights so the first dictation works
 # offline, like the Ollama pull below. Best-effort: faster-whisper also downloads
-# the model lazily on first use, so a failure here is not fatal. Defaults match
-# asr_common (CPU/int8/base) and can be overridden by exporting ASR_* before install.
-ASR_MODEL_DL="${ASR_MODEL:-base}"
+# the model lazily on first use, so a failure here is not fatal. The model is
+# run.sh's (small) unless ASR_MODEL is exported. Loaded on the CPU here: this only
+# fetches the weights, and the CPU needs no CUDA libraries.
+ASR_MODEL_DL="${ASR_MODEL:-small}"
 info "AI-VL-core (iacore) : pre-downloading Whisper '$ASR_MODEL_DL' weights (speech-to-text; one time) ..."
 if "$CORE/.venv/bin/python" - <<PY 2>/dev/null
 from faster_whisper import WhisperModel
-WhisperModel("${ASR_MODEL_DL}", device="${ASR_DEVICE:-cpu}", compute_type="${ASR_COMPUTE_TYPE:-int8}")
+WhisperModel("${ASR_MODEL_DL}", device="cpu", compute_type="int8")
 PY
 then ok "Whisper model '$ASR_MODEL_DL' ready."
 else warn "Could not pre-download the Whisper model; it will download on the first dictation instead."; fi
@@ -186,7 +187,7 @@ dl_kokoro "kokoro-v1.0.onnx"
 dl_kokoro "voices-v1.0.bin"
 
 printf '\n'
-info 'Step 3/4 - Frontend dependencies (bun)'
+info 'Step 3/5 - Frontend dependencies (bun)'
 export PATH="$HOME/.bun/bin:$PATH"
 if have bun; then
     ( cd "$FRONTEND" && bun install ) || die "bun install failed in the frontend."
@@ -196,7 +197,7 @@ else
 fi
 
 printf '\n'
-info 'Step 4/4 - Ollama model'
+info 'Step 4/5 - Ollama model'
 MODEL='qwen3-vl:4b-instruct'
 if [ -f "$CORE/config.json" ]; then
     m="$(grep -oE '"model"[[:space:]]*:[[:space:]]*"[^"]+"' "$CORE/config.json" | head -1 | sed -E 's/.*:[[:space:]]*"([^"]+)"/\1/')"
@@ -220,6 +221,34 @@ else
     else
         warn "The Ollama server did not answer on :11434; skipping the pull. Later: ollama pull $MODEL"
     fi
+fi
+
+printf '\n'
+info 'Step 5/5 - VLM model for llama-server (vision on the GPU)'
+# What linux/vlm-server.sh serves when vlm_backend is "llamacpp": a GGUF model and its
+# vision projector, from the Hugging Face repo in iacore's config (llamacpp_repo; each
+# file's name there is the basename of llamacpp_model / llamacpp_mmproj). Ollama still
+# matters: its bundled llama-server is the binary, and it is the fallback.
+read -r VLM_REPO VLM_MODEL VLM_MMPROJ < <(cd "$CORE/src" && "$CORE/.venv/bin/python" -c '
+from vlm_common import load_config
+c = load_config(); print(c["llamacpp_repo"], c["llamacpp_model"], c["llamacpp_mmproj"])' 2>/dev/null)
+dl_vlm() {
+    local dest="$CORE/$1" name; name="$(basename "$1")"
+    if [ -s "$dest" ]; then ok "VLM file '$name' already present."; return; fi
+    mkdir -p "$(dirname "$dest")"
+    info "Downloading '$name' from $VLM_REPO (GBs, one time only) ..."
+    if curl -fL --retry 3 -C - -o "$dest.part" "https://huggingface.co/$VLM_REPO/resolve/main/$name" \
+       && mv "$dest.part" "$dest"; then
+        ok "VLM file '$name' ready."
+    else
+        warn "Could not download '$name' (re-run ./install.sh to resume). Until then run.sh uses Ollama."
+    fi
+}
+if [ -n "${VLM_REPO:-}" ]; then
+    dl_vlm "$VLM_MODEL"
+    dl_vlm "$VLM_MMPROJ"
+else
+    warn "Could not read llamacpp_repo from iacore's config; skipping (run.sh will use Ollama)."
 fi
 
 printf '\n'

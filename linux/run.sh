@@ -123,22 +123,55 @@ fi
 pids=()
 cleanup() {
     printf '\n'
-    info 'Shutting down iacore and backend ...'
+    info 'Shutting down iacore, the backend and the VLM server ...'
     for pid in "${pids[@]}"; do kill "$pid" 2>/dev/null || true; done
     wait 2>/dev/null || true
 }
 trap cleanup INT TERM EXIT
 
+# --- 6a) The VLM server, when vlm_backend is "llamacpp" -------------------------
+# llama-server with the vision encoder on the GPU (vlm-server.sh says why: Ollama runs
+# it on the CPU, ~6 s per photo). It lives exactly as long as this script: started
+# here, killed by the trap like the other two, so the 4-5 GB of VRAM it holds are
+# only taken while the app runs. Its own log is chatty (one block per request), so
+# it goes to a file. If it does not come up, iacore falls back to Ollama.
+# vlm_backend: config.json (over iacore's defaults); VLM_BACKEND=ollama ./run.sh skips it.
+VLM_PORT=8081
+VLM_LOG="${TMPDIR:-/tmp}/ai-vl-vlm-server.log"
+vlm_backend="$(cd "$CORE/src" && "$CORE/.venv/bin/python" -c 'from vlm_common import vlm_backend; print(vlm_backend())' 2>/dev/null || echo ollama)"
+if [ "$vlm_backend" = "llamacpp" ]; then
+    info "Starting the VLM server (llama-server, :$VLM_PORT; log: $VLM_LOG) ..."
+    VLM_PORT="$VLM_PORT" "$ROOT/linux/vlm-server.sh" > "$VLM_LOG" 2>&1 &
+    pids+=($!)
+    vlm_up=0
+    for _ in $(seq 1 90); do
+        if curl -fsS --max-time 2 "http://127.0.0.1:$VLM_PORT/health" 2>/dev/null | grep -q '"ok"'; then
+            vlm_up=1; break
+        fi
+        kill -0 "${pids[-1]}" 2>/dev/null || break      # it died: no point waiting
+        sleep 1
+    done
+    if [ "$vlm_up" = 1 ]; then
+        ok "VLM server up (vision on the GPU)."
+        export VLM_BACKEND=llamacpp VLM_URL="http://127.0.0.1:$VLM_PORT"
+    else
+        warn "The VLM server did not start (see $VLM_LOG): falling back to Ollama."
+        export VLM_BACKEND=ollama
+    fi
+fi
+
 info 'Starting iacore (:8001) ...'
 (
     cd "$CORE"
     export PYTHONUNBUFFERED=1      # emit logs immediately, no buffering
-    # Speech-to-text (Whisper) knobs. Defaults are CPU/int8/base so the ASR model
-    # does NOT compete with the VLM for the 8 GB GPU. Move it to the GPU by running
-    # e.g.  ASR_DEVICE=cuda ASR_COMPUTE_TYPE=float16 ./run.sh
-    export ASR_MODEL="${ASR_MODEL:-base}"
-    export ASR_DEVICE="${ASR_DEVICE:-cpu}"
-    export ASR_COMPUTE_TYPE="${ASR_COMPUTE_TYPE:-int8}"
+    # Speech-to-text (Whisper) knobs: small on the GPU in int8. Measured 2026-10-16 on
+    # 30 Argentine speakers: 2.6 % WER in 0.16 s with 482 MB of VRAM, against 8.0 % in
+    # 0.47 s for the old base/CPU (AI-VL-core/src/asr_common.py has the full table).
+    # With no usable GPU it drops to the CPU by itself. Old behavior:
+    #   ASR_MODEL=base ASR_DEVICE=cpu ASR_COMPUTE_TYPE=int8 ./run.sh
+    export ASR_MODEL="${ASR_MODEL:-small}"
+    export ASR_DEVICE="${ASR_DEVICE:-cuda}"
+    export ASR_COMPUTE_TYPE="${ASR_COMPUTE_TYPE:-int8_float16}"
     # Neural text-to-speech (Piper). Default voice; override with TTS_VOICE=<name>
     # (must match a <name>.onnx in piper_voices/). Runs on CPU, tiny footprint.
     export TTS_VOICE="${TTS_VOICE:-es_AR-daniela-high}"
