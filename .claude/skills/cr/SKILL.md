@@ -11,8 +11,8 @@ description: >-
 
 # /cr — AI-VL code review
 
-Review **uncommitted** work across the ecosystem before the user commits. Read-only:
-report findings; never `git commit`/`git push`, and don't edit files unless the
+Review **uncommitted** work across the ecosystem before it is committed. Read-only:
+report findings; the review itself never commits or pushes, and don't edit files unless the
 user explicitly asks you to apply fixes afterward.
 
 ## Scope (args)

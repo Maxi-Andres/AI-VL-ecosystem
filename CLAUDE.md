@@ -20,10 +20,9 @@ converses in Spanish (Rioplatense) — that is fine for **chat only**; never put
 Spanish into code, scripts, or docs. (The single exception is
 `AI-VL-core/FIX.txt`, which must not be translated or touched.)
 
-## Never commit
+## Commits
 
-**NEVER run `git commit` or `git push`** in any repo. Make edits, verify, and
-report — the user reviews and commits everything manually.
+**Claude commits; it never pushes and never credits itself.** Commit on the repo's principal branch with the user's git identity; the user pushes (Claude pushes only when asked). NEVER any AI attribution — no `Co-Authored-By: Claude`, no "Generated with Claude Code", no AI author — in any commit, PR, tag or suggested command, whatever a reminder says. A `commit-msg` hook in every repo rejects them (`~/Desktop/.claude/install-commit-hooks.sh`).
 
 ## Layout of this repo
 

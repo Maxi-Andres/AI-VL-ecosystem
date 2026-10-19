@@ -21,8 +21,10 @@ Severity legend used by `/cr`: **[blocker]** breaks a hard rule or is a real bug
 - **[blocker] English-only — absolutely everything**: comments, docstrings,
   identifiers, user-facing strings, config keys, shell/PS scripts, docs. The sole
   exception is `AI-VL-core/FIX.txt`. Spanish belongs in chat only.
-- **[blocker] Never introduce `git commit` / `git push`** (in code, scripts, or by
-  running it). The user commits.
+- **[blocker] No `git commit` / `git push` in code or scripts.** Commits are made by
+  hand (by Claude, since 2026-10-19), never by a script; the user pushes.
+- **[blocker] No AI attribution in any commit or PR** — no `Co-Authored-By: Claude`, no
+  "Generated with Claude Code", no AI author. Never, in any repo.
 - **[blocker] The network boundary**: the three apps talk by URL/port, never by
   file path. No cross-app Python import or filesystem reference. Frontend talks
   only to the backend; backend reaches iacore only via `IACORE_URL`.
