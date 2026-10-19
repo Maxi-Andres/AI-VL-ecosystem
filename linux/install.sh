@@ -186,6 +186,21 @@ dl_kokoro() {
 dl_kokoro "kokoro-v1.0.onnx"
 dl_kokoro "voices-v1.0.bin"
 
+# Supertonic 3 TTS model (~380 MB from Hugging Face, Supertone/supertonic-3) into iacore's
+# supertonic_models/. The package downloads it; iacore itself never does at runtime.
+# Best-effort: the other voices work without it.
+if [ -f "$CORE/supertonic_models/onnx/vocoder.onnx" ]; then
+    ok 'Supertonic model already present.'
+else
+    info 'Downloading the Supertonic model ...'
+    if "$CORE/.venv/bin/python" -c 'import sys; from supertonic import TTS; TTS(model_dir=sys.argv[1])' \
+            "$CORE/supertonic_models" >/dev/null 2>&1; then
+        ok 'Supertonic model ready.'
+    else
+        warn "Could not download the Supertonic model; re-run the installer later (the other voices still work)."
+    fi
+fi
+
 printf '\n'
 info 'Step 3/5 - Frontend dependencies (bun)'
 export PATH="$HOME/.bun/bin:$PATH"

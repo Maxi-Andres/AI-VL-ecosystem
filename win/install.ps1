@@ -172,6 +172,17 @@ function Get-KokoroFile($name) {
 Get-KokoroFile 'kokoro-v1.0.onnx'
 Get-KokoroFile 'voices-v1.0.bin'
 
+# Supertonic 3 TTS model (~380 MB from Hugging Face) into iacore's supertonic_models/. The
+# package downloads it; iacore never does at runtime. Best-effort.
+$stDir = Join-Path $coreDir 'supertonic_models'
+if (Test-Path (Join-Path $stDir 'onnx\vocoder.onnx')) { Ok 'Supertonic model already present.' }
+else {
+    Info 'Downloading the Supertonic model ...'
+    & $coreVenvPy -c 'import sys; from supertonic import TTS; TTS(model_dir=sys.argv[1])' $stDir 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) { Ok 'Supertonic model ready.' }
+    else { Warn 'Could not download the Supertonic model; re-run the installer later (the other voices still work).' }
+}
+
 Write-Host ''
 Info 'Step 3/4 - Frontend dependencies (bun)'
 $bun = Resolve-Bun

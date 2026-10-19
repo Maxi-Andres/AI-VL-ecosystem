@@ -83,6 +83,7 @@ Design points:
 | **faster-whisper** (CTranslate2), model `small`, GPU int8 | Speech-to-text for every spoken command and question | 2.6 % WER on Argentine speakers in 0.16 s with 482 MB; the old `base` on the CPU erred 8 % | Parakeet TDT 0.6B v3 (CPU, 0.21 s, 4.4 %; plan B); Whisper large-v3-turbo (same accuracy, 2.6× the VRAM); browser speech recognition (cloud) |
 | **Piper** (piper-tts 1.4, 5 Spanish voices) | Text-to-speech, sentence by sentence | Local, CPU, 0.1-0.4 s per sentence. The current voice `es_AR-daniela-high` is the only Argentine one but the least intelligible (34 % vs 6-9 %): **replacement under review** | Kokoro (installed, 3 Spain-accent voices, 0.6 s); Kyutai Pocket TTS (0.32 s on GPU); Qwen3-TTS (4 s, too slow here); Chatterbox (3.5-4 GB, does not fit); browser `speechSynthesis`; the robot's own speaker |
 | **Kokoro** (kokoro-onnx 0.4.7) | Second local TTS engine, picked by voice name | A notch more natural than Piper | — |
+| **Supertonic 3** (supertonic 1.3.1, Open RAIL-M) | Third local TTS engine, picked by voice name (`supertonic-M1/M2/M3/F2/F4`) | Five voices chosen by ear (2026-10-19); all ten understood word for word by Whisper; CPU, ~0.6 s per sentence; sent at 22.05 kHz | Pocket TTS (streams from 0.08 s, voice cloning gated) — samples in the voices page |
 | **The robot's ear** (`ear_common.py`, WS `/ws/ear`) | Alexa-style listening through the G1's own microphone: cuts the stream into phrases by energy, transcribes them, and answers "Bender, …" | Simple energy gate tuned to the measured fan noise (RMS ~0.008 vs speech 0.05-0.11) plus Whisper's own VAD and the "Bender" hotword; no extra model | A trained wake-word model on the robot (openWakeWord), which would also catch "pará" without the link; Unitree's own on-robot ASR (`rt/audio_msg`) |
 | **Command interpreter** (`command_common.py`) | Spoken text → one skill JSON (`{skill, params, say}`) per robot | Uses the same VLM. The output is forced by a JSON grammar (llama-server) or `format: json` (Ollama), then validated: unknown skills become `unknown` and params are coerced to their declared type | A small text-only model with function calling; rules or regexes (brittle with free speech) |
 | PyTorch 2.12 (CUDA 13) | Under Ultralytics | Pulled in by Ultralytics | — |
@@ -98,7 +99,7 @@ Wiring decisions worth knowing:
 
 | Technology | Job |
 |---|---|
-| `linux/install.sh` | Installs Python, Bun and Ollama if missing; builds the venvs. Downloads Whisper, the Piper and Kokoro voices, the Ollama model, and the VLM GGUF + vision projector from Hugging Face. |
+| `linux/install.sh` | Installs Python, Bun and Ollama if missing; builds the venvs. Downloads Whisper, the Piper, Kokoro and Supertonic voices, the Ollama model, and the VLM GGUF + vision projector from Hugging Face. |
 | `linux/run.sh` | Detects the LAN IP, makes the cert, builds the frontend, then starts the VLM server, iacore (:8001) and the backend over HTTPS (:8443). Ctrl+C stops all three, which frees the GPU. |
 | `linux/run-with-robot.sh` | Also starts the ROS2 devcontainer, then the robot executor (:8090) and the camera bridge (:8091) inside it. |
 | `win/*.ps1` | The Windows versions. They do not start llama-server yet, so Windows runs the VLM on Ollama. |
@@ -172,7 +173,7 @@ Wiring decisions worth knowing:
 
 ## 10. Known gaps and stale docs (2026-10-16)
 
-- **Windows** still serves the VLM with Ollama: `win/run.ps1` pins `VLM_BACKEND=ollama` until it can start llama-server. `win/install.ps1` does not download the Piper/Kokoro voices or the GGUF.
+- **Windows** still serves the VLM with Ollama: `win/run.ps1` pins `VLM_BACKEND=ollama` until it can start llama-server. `win/install.ps1` downloads the Piper, Kokoro and Supertonic voices but not the GGUF.
 - **Code defaults differ from config.json** in places:
   - YOLO: `yolov8n` in code vs `yolo11s` in config.
   - Whisper: `base`/CPU in code vs `small`/GPU from `run.sh`.
