@@ -172,9 +172,9 @@ info 'Starting iacore (:8001) ...'
     export ASR_MODEL="${ASR_MODEL:-small}"
     export ASR_DEVICE="${ASR_DEVICE:-cuda}"
     export ASR_COMPUTE_TYPE="${ASR_COMPUTE_TYPE:-int8_float16}"
-    # Neural text-to-speech (Piper). Default voice; override with TTS_VOICE=<name>
-    # (must match a <name>.onnx in piper_voices/). Runs on CPU, tiny footprint.
-    export TTS_VOICE="${TTS_VOICE:-es_AR-daniela-high}"
+    # Neural text-to-speech. Default voice (Kokoro's Alex, picked 2026-10-19); override with
+    # TTS_VOICE=<name> — any name /tts/voices lists. Runs on CPU.
+    export TTS_VOICE="${TTS_VOICE:-em_alex}"
     exec .venv/bin/python -m uvicorn service:app --host 0.0.0.0 --port 8001
 ) > >(sed -u 's/^/[iacore]  /') 2>&1 &
 pids+=($!)

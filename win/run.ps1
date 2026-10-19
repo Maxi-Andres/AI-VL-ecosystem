@@ -163,7 +163,7 @@ $asrCompute = if ($env:ASR_COMPUTE_TYPE) { $env:ASR_COMPUTE_TYPE } else { 'int8'
 # Pin Ollama here, or iacore would send every question to a dead :8081.
 $vlmBackend = if ($env:VLM_BACKEND)      { $env:VLM_BACKEND }      else { 'ollama' }
 # Neural text-to-speech (Piper) default voice; override with TTS_VOICE=<name>.
-$ttsVoice   = if ($env:TTS_VOICE)        { $env:TTS_VOICE }        else { 'es_AR-daniela-high' }
+$ttsVoice   = if ($env:TTS_VOICE)        { $env:TTS_VOICE }        else { 'em_alex' }
 Info 'Starting iacore (:8001) ...'
 # Quote each `set` assignment so values with spaces don't break the cmd chain.
 $iacoreCmd = "title AI-VL iacore :8001 & set `"ASR_MODEL=$asrModel`" & set `"ASR_DEVICE=$asrDevice`" & set `"ASR_COMPUTE_TYPE=$asrCompute`" & set `"TTS_VOICE=$ttsVoice`" & set `"VLM_BACKEND=$vlmBackend`" & .venv\Scripts\python.exe -m uvicorn service:app --host 0.0.0.0 --port 8001"
