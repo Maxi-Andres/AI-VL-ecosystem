@@ -1,6 +1,7 @@
 # Transport: native SDK vs ROS2 — decision record
 
-**Status:** open, deliberately deferred. Written 2026-08-27.
+**Status:** open, deliberately deferred. Written 2026-08-27. **Principle decided 2026-10-21 —
+see the update at the end.**
 **Decision to take:** migrate AI-VL's robot transport from `unitree_ros2` (rclpy) to
 `unitree_sdk2` (native, via its Python binding), and delete the ROS2 path unless the ROS2
 tooling is actually being used.
@@ -132,3 +133,28 @@ is legitimate; the duplicated command vocabulary from cost 1 still has to be fix
 way.
 
 If they are not in use, the ROS2 dependency is being paid for without being collected.
+
+## 2026-10-21 update — ROS2 above the relay, never below
+
+Reviewing the G1 plan of 2026-10-21 (ROS2 Humble end to end: action servers, MoveIt 2, Nav2,
+behavior trees), the user picked a hybrid. The principle:
+
+- **Execution is native, on the robot, behind the relay.** Every command that moves a joint,
+  a finger or the legs goes through `robot-command-relay` and its C++ senders, where the limits
+  are enforced and tested (`joint_ctl_core.hpp`). No ROS2 node writes `rt/arm_sdk`,
+  `rt/lowcmd` or the hands.
+- **ROS2 is allowed above it, on the edge, as a planning layer** — MoveIt 2 for arm trajectories,
+  Nav2 for navigation, a behavior tree for sequencing — whose output is sent to the relay over
+  HTTP. That is the criterion this record already stated ("only if you want the ROS2
+  ecosystem"): MoveIt 2 and Nav2 are exactly that ecosystem.
+
+Why not ROS2 end to end: DDS does not cross the wireless link to the robot (only 2 of 122 topics
+are visible from another subnet); the G1's PC2 runs Ubuntu 20.04, where Humble only runs in a
+container; and the plan's "Robot Action Adapter" already exists — it is the relay.
+
+**What this changes in the order of work above.** Step 5 ("delete the ROS2 transports") no longer
+means deleting ROS2 altogether; it means deleting the ROS2 *transports* — the PC still moves
+robots only through the relay or the SDK. Steps 1-4 stand, and so do costs 1 (the duplicated
+command vocabulary) and 4 (the privileged container). Whether MoveIt 2 is actually adopted is
+decided with a short spike against a pinocchio-based IK when the G1 grab skill starts. Design
+of each piece: `~/Desktop/.claude/roadmap/G1.md` §6.8.
