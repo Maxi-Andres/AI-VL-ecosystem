@@ -37,6 +37,7 @@ network (`robot-splunk-docs/RED-Y-DDS.md`).
 | Tailwind CSS v4 | Styling; theme as CSS `@theme` tokens, no config file | Utility classes, one theme source | — |
 | React Router 7 | Routes `/`, `/drive`, `/robot`, `/video`, `/joints` | Joints is lazy-loaded so the drive pad never pays for a 3D engine | — |
 | Tabler icons | Every icon | Project rule: icons, never emojis | — |
+| Manrope (`@fontsource-variable/manrope`) | Typeface of the light redesign (sign-in and setup first) | Bundled with the app, not loaded from Google: customer installs may have no internet | Inter, Geist |
 | three.js 0.169 + urdf-loader 0.12.3 (pinned exactly) | The G1 in 3D, posed live from its joint state | Loads Unitree's URDF directly. Meshes are decimated by `scripts/build_g1_model.py` (the full set is ~100 MB, too heavy over LTE) | — |
 | Vitest 4, ESLint 10 | Unit tests (8 files, 44 cases), lint | — | — |
 
@@ -64,6 +65,8 @@ Three video transports, picked per robot in the UI:
 |---|---|---|---|
 | FastAPI 0.139 + Uvicorn 0.49 | The one origin the browser talks to: `/api/*` REST, `/ws/*` WebSockets, the built SPA | Python like iacore; async fan-out. "Start with FastAPI, split out a Kotlin gateway later" (`AI-VL-core/docs/ARCHITECTURE.md` §3) | Kotlin/Spring (deferred) |
 | httpx | Calls iacore, the robot executor and the camera bridge | Async, keep-alive | — |
+| SQLite + SQLAlchemy 2 (async, aiosqlite) + Alembic | Accounts: organizations, users, roles, sessions, device keys, audit log (`db.py`, `migrations/`) | One file, nothing to run per install; SQLAlchemy keeps Postgres a URL change away; migrations run on startup | Postgres (when a deploy needs it) |
+| Server-side sessions, argon2id (argon2-cffi) | Sign-in: an opaque httpOnly SameSite=Strict cookie, default-deny route policy (`auth.py`) | Same-origin app, so no JWT: a server-side session revokes instantly, open WebSockets included | JWT access + refresh tokens; Keycloak/Authentik; Auth0/Clerk/WorkOS (decided 2026-10-26: own, self-hosted) |
 | Self-signed TLS (OpenSSL in `run.sh`) | HTTPS so a phone may use its camera and mic over the LAN | Browsers only allow getUserMedia on HTTPS or localhost. The cert is regenerated when the IP changes | A reverse proxy (not needed) |
 
 Design points:

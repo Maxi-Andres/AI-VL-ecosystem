@@ -120,10 +120,24 @@ start_executor(){
   return 1
 }
 
+# The backend refuses the robot's video without a device key (AI-VL-backend auth.POLICY).
+# The backend writes one here when the install is set up; the container cannot see $HOME, so
+# it travels as an environment variable — named with `-e VAR` and no value, so docker reads
+# it from this shell's environment and the key never shows up in `ps`.
+DEVICE_KEY_FILE="${PILOT_DATA_DIR:-$HOME/.pilot}/device-key"
+CAM_KEYED=0
 start_camera(){
   docker exec -u root "$CONTAINER" pkill -9 -f '[r]obot_camera_bridge\.py' >/dev/null 2>&1 || true
   for _ in $(seq 1 15); do camhealth || break; sleep 0.3; done
-  docker exec -d "$CONTAINER" \
+  local key_args=()
+  if [ -s "$DEVICE_KEY_FILE" ]; then
+    PILOT_DEVICE_KEY="$(cat "$DEVICE_KEY_FILE")"; export PILOT_DEVICE_KEY
+    key_args=(-e PILOT_DEVICE_KEY); CAM_KEYED=1
+  else
+    CAM_KEYED=0
+    warn "No device key yet ($DEVICE_KEY_FILE): robot video stays off until the app is set up."
+  fi
+  docker exec -d ${key_args[@]+"${key_args[@]}"} "$CONTAINER" \
     bash -lc 'bash /workspace/robot_camera_bridge/run_camera_bridge.sh >/tmp/robot_camera_bridge.log 2>&1'
   for _ in $(seq 1 20); do camhealth && return 0; sleep 1; done
   return 1
@@ -164,6 +178,12 @@ watchdog(){
         start_executor && ok "Executor restarted." || warn "Executor restart failed."
         ef=0
       fi
+    fi
+    # First run: the key appears when someone finishes setup in the browser. Restart the
+    # bridge once so it picks it up, instead of refusing video until the next launch.
+    if [ "$CAM_KEYED" = 0 ] && [ -s "$DEVICE_KEY_FILE" ]; then
+      info "Device key created — restarting the camera bridge with it…"
+      start_camera && ok "Camera bridge restarted with its key." || warn "Camera bridge restart failed."
     fi
     if camhealth; then cf=0; else
       cf=$((cf+1))
