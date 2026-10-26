@@ -38,6 +38,7 @@ network (`robot-splunk-docs/RED-Y-DDS.md`).
 | React Router 7 | Routes `/`, `/drive`, `/robot`, `/video`, `/joints` | Joints is lazy-loaded so the drive pad never pays for a 3D engine | — |
 | Tabler icons | Every icon | Project rule: icons, never emojis | — |
 | Leaflet 1.9.4 + OpenStreetMap tiles | Placing a site on a street map (Fleet → site) | Small, no API key; OSM's own tiles are fine for this light use with attribution. No satellite layer: free satellite tiles (Esri's) are not licensed for a product | MapLibre GL; a licensed provider (MapTiler, Mapbox, Esri with a key) when a deploy needs satellite |
+| OpenStreetMap Nominatim | Finding a site's address on the map (Fleet → edit site); called from the browser, `GEOCODER_URL` in `src/config.ts` | Free, no key; its usage policy allows light use like this (a search when someone presses Enter, never as-you-type). Needs internet in the browser — offline installs place the pin by clicking | Photon; a paid geocoder (Google, MapTiler) or a self-hosted Nominatim for heavy or offline use |
 | Manrope (`@fontsource-variable/manrope`) | Typeface of the light redesign (sign-in and setup first) | Bundled with the app, not loaded from Google: customer installs may have no internet | Inter, Geist |
 | three.js 0.169 + urdf-loader 0.12.3 (pinned exactly) | The G1 in 3D, posed live from its joint state | Loads Unitree's URDF directly. Meshes are decimated by `scripts/build_g1_model.py` (the full set is ~100 MB, too heavy over LTE) | — |
 | Vitest 4, ESLint 10 | Unit tests (8 files, 44 cases), lint | — | — |
