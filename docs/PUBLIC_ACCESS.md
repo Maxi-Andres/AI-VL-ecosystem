@@ -21,6 +21,13 @@ GoDaddy (the domain's DNS, `ns63/ns64.domaincontrol.com`): an `A` record `pilot`
 
 ## 2. The office nginx — 192.168.12.102
 
+**Live since 2026-10-27 18:18 UTC**: installed with `deploy/nginx/install-pilot.sh` (certificate
+by webroot, valid to 2027-01-25, renewed by certbot's timer, which already reloads nginx). Checked
+from outside that day: the certificate is Pilot's own, http redirects to https, every API answers
+401 without a session, `/docs` and `/openapi.json` 404, `/ws/robot-*` 403, and Pilot logs the
+caller's address (not the nginx's) — TRUSTED_PROXIES works. Only the users in the host's `sudo`
+group (silkadmin, fermaura, maxi) can change it.
+
 Found 2026-10-27: an Ubuntu host on VLAN 12 (nginx 1.28.3, SSH open), the one behind the public
 address that also publishes `splunk.` (Splunk, 192.168.20.200) and `soporte.` (a Zammad
 helpdesk). The files to install are in `deploy/nginx/` — `pilot.silk-technologies.com` (the
