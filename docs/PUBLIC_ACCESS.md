@@ -5,7 +5,7 @@ Written 2026-10-27, when the company decided Pilot must be reachable from the in
 Microsoft sign-in, the same way Splunk already is.
 
 ```
-browser ──https──▶ 201.216.197.132 (office nginx, real certificate)
+browser ──https──▶ 201.216.197.132 ─NAT─▶ 192.168.12.102 (office nginx, VLAN 12, real certificate)
                          │  only pilot.silk-technologies.com, robot ingest refused
                          ▼
                    https://192.168.20.99:8443  (Pilot: backend + app, its own certificate)
@@ -19,10 +19,13 @@ letting anyone else in.
 GoDaddy (the domain's DNS, `ns63/ns64.domaincontrol.com`): an `A` record `pilot` →
 `201.216.197.132`, TTL 600 — the same address as `splunk`. Created 2026-10-27.
 
-## 2. The office nginx (whoever administers 201.216.197.132)
+## 2. The office nginx — 192.168.12.102
 
-The same machine that publishes `splunk.silk-technologies.com`. Add one site and get its
-certificate:
+Found 2026-10-27: an Ubuntu host on VLAN 12 (nginx 1.28.3, SSH open), the one behind the public
+address that also publishes `splunk.` (Splunk, 192.168.20.200) and `soporte.` (a Zammad
+helpdesk). The files to install are in `deploy/nginx/` — `pilot.silk-technologies.com` (the
+site) and `pilot-proxy.conf` (the snippet), with the commands at the top of the site file. What
+they contain, for review:
 
 ```nginx
 # /etc/nginx/sites-available/pilot.silk-technologies.com  (then ln -s into sites-enabled)
@@ -89,11 +92,12 @@ sudo certbot --nginx -d pilot.silk-technologies.com   # Let's Encrypt, renews by
    in `~/.pilot/pilot.env` (read by `linux/run.sh`; create it):
 
    ```bash
-   TRUSTED_PROXIES=<the nginx's address as Pilot sees it>
+   TRUSTED_PROXIES=192.168.12.102
    ```
 
-   To find that address, open `https://pilot.silk-technologies.com` once and read the
-   `[backend]` log: the client address on that request is the nginx. Restart Pilot after.
+   Written on this install 2026-10-27. Confirm it on the first request through the domain: the
+   client address in the `[backend]` log must be 192.168.12.102 (it would differ only if the
+   router NATs between VLAN 12 and 20). Restart Pilot after any change.
    Until this is set, Pilot fails closed: a request that arrives through a proxy it was not
    told to trust counts as coming from the internet.
 2. **Set the public address**: Settings → Team & roles → Invite member → "Invitation links point
