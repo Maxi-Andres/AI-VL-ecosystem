@@ -22,6 +22,10 @@ server {
     # The robots push their video in from the office network, never from the internet.
     location ~ ^/ws/robot-(cam|h264)$ { return 403; }
 
+    # FastAPI's API map. Pilot no longer serves it (2026-10-27); refused here as well, so an
+    # older Pilot behind this proxy cannot publish it either.
+    location ~ ^/(docs|redoc|openapi\.json)(/|$) { return 404; }
+
     location ~ ^/api/(auth/(login|setup|sso/)|invitations/|password-resets/) {
         limit_req zone=pilot_auth burst=10 nodelay;
         include snippets/pilot-proxy.conf;
