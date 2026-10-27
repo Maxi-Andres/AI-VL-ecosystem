@@ -220,8 +220,10 @@ open_browser() {
 (
     # Wait (up to ~20s) for the backend to answer over HTTPS (self-signed cert
     # -> curl -k). Only then open it, so we don't hit it before it is up.
+    # /api/auth/state, not /api/health: health needs a signed-in session, so the probe
+    # got 401 on every try, logged it, and always waited the full 20 s.
     for _ in $(seq 1 40); do
-        curl -k -fsS --max-time 2 "https://localhost:$HTTPS_PORT/api/health" >/dev/null 2>&1 && break
+        curl -k -fsS --max-time 2 "https://localhost:$HTTPS_PORT/api/auth/state" >/dev/null 2>&1 && break
         sleep 0.5
     done
     if [ -n "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ] && open_browser "$APP_URL"; then
