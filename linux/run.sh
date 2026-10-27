@@ -186,6 +186,10 @@ info "Starting backend HTTPS (:$HTTPS_PORT) serving the frontend ..."
     export IACORE_URL="http://localhost:8001"
     export CORS_ORIGINS="*"
     export FRONTEND_DIST="$DIST"
+    # This install's own settings, kept out of the repo: e.g. TRUSTED_PROXIES=<the office
+    # nginx's LAN address> once Pilot is published through it (docs/PUBLIC_ACCESS.md).
+    PILOT_ENV="${PILOT_ENV:-$HOME/.pilot/pilot.env}"
+    if [ -f "$PILOT_ENV" ]; then set -a; . "$PILOT_ENV"; set +a; fi
     exec .venv/bin/python -m uvicorn app:app --host 0.0.0.0 --port "$HTTPS_PORT" \
         --ssl-keyfile "$KEY" --ssl-certfile "$CRT"
 ) > >(sed -u 's/^/[backend] /') 2>&1 &
