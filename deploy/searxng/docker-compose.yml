@@ -1,0 +1,14 @@
+# The web search behind the vision assistant ("buscá…", noticias, clima, precios).
+# Start: ./install.sh (once; then it restarts with Docker). Only iacore on this machine uses it.
+services:
+  searxng:
+    image: searxng/searxng:2026.10.24-ef0ec03da
+    container_name: searxng
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8095:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://127.0.0.1:8095/
+      - SEARXNG_SECRET=${SEARXNG_SECRET:?run install.sh}
+    volumes:
+      - ./settings.yml:/etc/searxng/settings.yml:ro

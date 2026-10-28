@@ -1,0 +1,24 @@
+# SearXNG for the vision assistant's web search (AI-VL-core/src/search_common.py).
+# Local only: bound to 127.0.0.1, asked by iacore, never published. No API key and no quota —
+# it asks the public engines itself. The secret key comes from SEARXNG_SECRET (.env, made by
+# install.sh, not in git).
+use_default_settings: true
+
+general:
+  instance_name: "Pilot search"
+
+server:
+  limiter: false          # one local caller; the bot limiter would only refuse iacore
+  image_proxy: false
+  public_instance: false
+
+search:
+  safe_search: 1
+  default_lang: "es"
+  formats:
+    - html
+    - json                # what iacore reads
+
+outgoing:
+  request_timeout: 3.0    # the answer waits on this: a slow engine is dropped, not waited for
+  max_request_timeout: 4.0
