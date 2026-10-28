@@ -121,10 +121,28 @@ fi
 # Trick: `> >(sed ...)` (process substitution) prefixes without breaking the PID
 # -> $! stays the python one, so the trap can kill it; sed exits only at EOF.
 pids=()
+# Never hangs: a service still busy after SHUTDOWN_GRACE seconds is killed. uvicorn waits on
+# its own for every request in flight ("Waiting for background tasks to complete"), and one
+# that never ends — a long stream through the office nginx — held Ctrl+C forever (2026-10-28).
+SHUTDOWN_GRACE=8
 cleanup() {
+    trap - INT TERM EXIT            # once, even when Ctrl+C is followed by the EXIT trap
     printf '\n'
     info 'Shutting down iacore, the backend and the VLM server ...'
     for pid in "${pids[@]}"; do kill "$pid" 2>/dev/null || true; done
+    local left
+    for _ in $(seq $((SHUTDOWN_GRACE * 4))); do
+        left=0
+        for pid in "${pids[@]}"; do kill -0 "$pid" 2>/dev/null && left=1; done
+        [ "$left" = 0 ] && break
+        sleep 0.25
+    done
+    for pid in "${pids[@]}"; do
+        if kill -0 "$pid" 2>/dev/null; then
+            warn "pid $pid still running after ${SHUTDOWN_GRACE}s — killing it"
+            kill -9 "$pid" 2>/dev/null || true
+        fi
+    done
     wait 2>/dev/null || true
 }
 trap cleanup INT TERM EXIT
@@ -175,7 +193,7 @@ info 'Starting iacore (:8001) ...'
     # Neural text-to-speech. Default voice (Kokoro's Alex, picked 2026-10-19); override with
     # TTS_VOICE=<name> — any name /tts/voices lists. Runs on CPU.
     export TTS_VOICE="${TTS_VOICE:-em_alex}"
-    exec .venv/bin/python -m uvicorn service:app --host 0.0.0.0 --port 8001
+    exec .venv/bin/python -m uvicorn service:app --host 0.0.0.0 --port 8001 --timeout-graceful-shutdown 5
 ) > >(sed -u 's/^/[iacore]  /') 2>&1 &
 pids+=($!)
 
@@ -191,7 +209,7 @@ info "Starting backend HTTPS (:$HTTPS_PORT) serving the frontend ..."
     PILOT_ENV="${PILOT_ENV:-$HOME/.pilot/pilot.env}"
     if [ -f "$PILOT_ENV" ]; then set -a; . "$PILOT_ENV"; set +a; fi
     exec .venv/bin/python -m uvicorn app:app --host 0.0.0.0 --port "$HTTPS_PORT" \
-        --ssl-keyfile "$KEY" --ssl-certfile "$CRT"
+        --ssl-keyfile "$KEY" --ssl-certfile "$CRT" --timeout-graceful-shutdown 5
 ) > >(sed -u 's/^/[backend] /') 2>&1 &
 pids+=($!)
 
