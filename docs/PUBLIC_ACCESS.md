@@ -132,7 +132,14 @@ everyone signing in is set in Entra (Conditional Access / security defaults), no
 | The browser | CSP (scripts from Pilot only), no framing, HSTS, nosniff, same-origin referrer; session cookie httpOnly + SameSite=Strict + Secure; the Origin of every cookie write is checked. |
 | Robots | Their video comes in only from the office (nginx refuses `/ws/robot-*`); every command still goes through the robot's own limits (the executor's clamp and dead-man switch). |
 
+| What a signed-in person can send | Reviewed 2026-10-28: iacore takes only the YOLO weights `/options` lists (a free-form name was downloaded and unpickled — code execution for any viewer); moving the public address is an owner's setting (sign-on follows it); Microsoft accounts match on the sign-in name, never on the unverified `email` claim; a relay URL is one line. |
+
 ## Not covered — decide before relying on it
+
+- **SSH on the public address.** Found 2026-10-28: port 22 of 201.216.197.132 reaches this same
+  nginx host and accepts passwords. Whoever gets in there can rewrite the proxy in front of
+  Pilot, Splunk and the helpdesk. Remove that forward on the router, or at least turn
+  passwords off in its sshd and use keys.
 
 - **iacore (:8001), the executor (:8090), the camera bridge (:8091) and mediamtx** have no
   credential of their own. They must never be published: only Pilot's port goes through nginx.
