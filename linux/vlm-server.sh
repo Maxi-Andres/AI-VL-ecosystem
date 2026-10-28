@@ -12,7 +12,9 @@
 #      ./vlm-server.sh                      # the model in AI-VL-core/config.json
 #      ./vlm-server.sh MODEL.gguf MMPROJ.gguf [ALIAS]
 #
-#  Env: VLM_PORT (8081), VLM_CTX (4096), LLAMA_SERVER (binary; default: one on PATH,
+#  Env: VLM_PORT (8081), VLM_CTX (4096), VLM_MODEL + VLM_MMPROJ (another model for this run
+#  instead of config.json's, paths relative to AI-VL-core — e.g. the 2B to try something with
+#  more room; the alias is the file name), LLAMA_SERVER (binary; default: one on PATH,
 #  else the one Ollama ships in /usr/local/lib/ollama), VLM_IMAGE_MIN_TOKENS (the
 #  fewest tokens a photo may become; default: the model's own, see below), VLM_NGL
 #  (layers on the GPU, 99 = all; lower only to squeeze in a model that does not fit).
@@ -36,6 +38,10 @@ c = load_config(); print(" ".join(str(c.get(k) or "") for k in sys.argv[1:]))' "
 # --- Which model: arguments, else config.json (paths relative to AI-VL-core) ---
 if [ $# -ge 2 ]; then
     MODEL="$1"; MMPROJ="$2"; ALIAS="${3:-$(basename "$1" .gguf)}"
+elif [ -n "${VLM_MODEL:-}" ] && [ -n "${VLM_MMPROJ:-}" ]; then
+    MODEL="$VLM_MODEL"; MMPROJ="$VLM_MMPROJ"; ALIAS="$(basename "$VLM_MODEL" .gguf)"
+    case "$MODEL" in /*) ;; *) MODEL="$CORE/$MODEL" ;; esac
+    case "$MMPROJ" in /*) ;; *) MMPROJ="$CORE/$MMPROJ" ;; esac
 else
     read -r MODEL MMPROJ ALIAS < <(config llamacpp_model llamacpp_mmproj llamacpp_alias)
     case "$MODEL" in /*) ;; *) MODEL="$CORE/$MODEL" ;; esac
