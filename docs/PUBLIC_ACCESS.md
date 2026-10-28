@@ -148,6 +148,7 @@ everyone signing in is set in Entra (Conditional Access / security defaults), no
   (`POST /api/whep/{robot}`, signed in, Pilot's certificate) instead of to mediamtx's own
   `:8889` and its self-signed certificate. The video itself still flows mediamtx → browser
   over ICE, and mediamtx announces only office addresses, so from the internet that option
-  fails and the page falls back to H.264 intra, which goes through Pilot. To make it work
-  from outside: `webrtcAdditionalHosts: [201.216.197.132]` in mediamtx.yml and a UDP 8189
-  forward on the router to 192.168.20.99 (or a TURN server).
+  fails and the page falls back to H.264 intra, which goes through Pilot. Done on our side
+  the same day: mediamtx announces 201.216.197.132 and listens for ICE on UDP and TCP 8189
+  (robot-video-pipeline/mediamtx.yml). **Left: forward UDP 8189 and TCP 8189 on the router to
+  192.168.20.99.** Only ICE/DTLS answers there, and only for an offer Pilot let through.
