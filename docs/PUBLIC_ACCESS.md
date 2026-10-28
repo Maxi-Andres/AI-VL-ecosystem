@@ -144,5 +144,10 @@ everyone signing in is set in Entra (Conditional Access / security defaults), no
 - **iacore (:8001), the executor (:8090), the camera bridge (:8091) and mediamtx** have no
   credential of their own. They must never be published: only Pilot's port goes through nginx.
   Anyone already inside the office network can still reach them (ROADMAP PLATAFORMA §7.1).
-- **The H.264 (WebRTC) video** goes from mediamtx straight to the browser and has no STUN/TURN:
-  from the internet, use MJPEG (the default), which goes through Pilot.
+- **The H.264 (WebRTC) video.** Since 2026-10-28 the browser's offer goes through Pilot
+  (`POST /api/whep/{robot}`, signed in, Pilot's certificate) instead of to mediamtx's own
+  `:8889` and its self-signed certificate. The video itself still flows mediamtx → browser
+  over ICE, and mediamtx announces only office addresses, so from the internet that option
+  fails and the page falls back to H.264 intra, which goes through Pilot. To make it work
+  from outside: `webrtcAdditionalHosts: [201.216.197.132]` in mediamtx.yml and a UDP 8189
+  forward on the router to 192.168.20.99 (or a TURN server).
