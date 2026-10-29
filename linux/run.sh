@@ -182,12 +182,13 @@ info 'Starting iacore (:8001) ...'
 (
     cd "$CORE"
     export PYTHONUNBUFFERED=1      # emit logs immediately, no buffering
-    # Speech-to-text (Whisper) knobs: small on the GPU in int8. Measured 2026-10-16 on
-    # 30 Argentine speakers: 2.6 % WER in 0.16 s with 482 MB of VRAM, against 8.0 % in
-    # 0.47 s for the old base/CPU (AI-VL-core/src/asr_common.py has the full table).
-    # With no usable GPU it drops to the CPU by itself. Old behavior:
-    #   ASR_MODEL=base ASR_DEVICE=cpu ASR_COMPUTE_TYPE=int8 ./run.sh
-    export ASR_MODEL="${ASR_MODEL:-small}"
+    # Speech-to-text (Whisper) knobs: large-v3-turbo on the GPU in int8. On clean read speech
+    # (30 Argentine speakers, 2026-10-16) small tied with it — 2.6 % WER, 482 MB of VRAM —
+    # but on the G1's own microphone (8 recordings with known text, 2026-10-29) small got
+    # 39 % of the words wrong and turbo 18 %, for 1251 MB of VRAM and 0.25 s per utterance.
+    # medium and large-v3 do not fit beside the VLM. With no usable GPU it drops to the CPU
+    # by itself. The lighter one: ASR_MODEL=small ./run.sh
+    export ASR_MODEL="${ASR_MODEL:-large-v3-turbo}"
     export ASR_DEVICE="${ASR_DEVICE:-cuda}"
     export ASR_COMPUTE_TYPE="${ASR_COMPUTE_TYPE:-int8_float16}"
     # Neural text-to-speech. Default voice (Kokoro's Alex, picked 2026-10-19); override with

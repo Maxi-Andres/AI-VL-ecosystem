@@ -129,9 +129,9 @@ setup_py_project "$BACKEND" 'AI-VL-backend'
 # Pre-download the Whisper (speech-to-text) weights so the first dictation works
 # offline, like the Ollama pull below. Best-effort: faster-whisper also downloads
 # the model lazily on first use, so a failure here is not fatal. The model is
-# run.sh's (small) unless ASR_MODEL is exported. Loaded on the CPU here: this only
+# run.sh's (large-v3-turbo) unless ASR_MODEL is exported. Loaded on the CPU here: this only
 # fetches the weights, and the CPU needs no CUDA libraries.
-ASR_MODEL_DL="${ASR_MODEL:-small}"
+ASR_MODEL_DL="${ASR_MODEL:-large-v3-turbo}"
 info "AI-VL-core (iacore) : pre-downloading Whisper '$ASR_MODEL_DL' weights (speech-to-text; one time) ..."
 if "$CORE/.venv/bin/python" - <<PY 2>/dev/null
 from faster_whisper import WhisperModel

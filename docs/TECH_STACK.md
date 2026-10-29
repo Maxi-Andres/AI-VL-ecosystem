@@ -87,7 +87,7 @@ Design points:
 | **Qwen3-VL 4B Instruct** (Q4_K_M GGUF) | Looks at a frame and answers in Spanish; detects as JSON; interprets spoken commands | Best of 9 candidates measured on this card: 0.6 s to the first word, 8/8 facts, 8/8 commands, 4.5 GB | Measured and rejected: Qwen3-VL 2B/8B, Gemma 3 4B, InternVL3 8B, MiniCPM-V 4.5, SmolVLM2 (see MODEL_BENCHMARKS) |
 | **llama-server** (llama.cpp, the copy Ollama ships) | Serves the VLM on 127.0.0.1:8081; `run.sh` starts and stops it with the app | Keeps the vision encoder on the GPU: 6.8 s → 0.6 s per question | Ollama alone (encoder on CPU); vLLM (much heavier, more VRAM) |
 | **Ollama** 0.30.6 | Fallback VLM server, the CLI tools' server, and the source of the llama-server binary and CUDA 12 libraries | Already installed by `install.sh`; simple model pulls | — |
-| **faster-whisper** (CTranslate2), model `small`, GPU int8 | Speech-to-text for every spoken command and question | 2.6 % WER on Argentine speakers in 0.16 s with 482 MB; the old `base` on the CPU erred 8 % | Parakeet TDT 0.6B v3 (CPU, 0.21 s, 4.4 %; plan B); Whisper large-v3-turbo (same accuracy, 2.6× the VRAM); browser speech recognition (cloud) |
+| **faster-whisper** (CTranslate2), model `large-v3-turbo`, GPU int8 | Speech-to-text for every spoken command and question | On the G1's own microphone (8 recordings with known text, 2026-10-29) it got 18 % of the words wrong where `small` got 39 %, for 1251 MB of VRAM and 0.25 s; on clean read speech the two tie (2.6 %) | `small` (482 MB, half the accuracy on the robot's mic); large-v3 (15 %, does not fit beside the VLM); Parakeet TDT 0.6B v3 (34 %), Voxtral Mini 3B (20 %, 40 s per clip on the CPU), Granite Speech 4.1 2B (53 %); browser speech recognition (cloud) |
 | **Piper** (piper-tts 1.4, 5 Spanish voices) | Text-to-speech, sentence by sentence | Local, CPU, 0.1-0.4 s per sentence. `es_AR-daniela-high` is the only Argentine voice but the least intelligible (34 % vs 6-9 %); since 2026-10-19 the default is Kokoro's `em_alex` | Kokoro (installed, 3 Spain-accent voices, 0.6 s); Kyutai Pocket TTS (0.32 s on GPU); Qwen3-TTS (4 s, too slow here); Chatterbox (3.5-4 GB, does not fit); browser `speechSynthesis`; the robot's own speaker |
 | **Kokoro** (kokoro-onnx 0.4.7) | Second local TTS engine, picked by voice name | A notch more natural than Piper | — |
 | **Supertonic 3** (supertonic 1.3.1, Open RAIL-M) | Third local TTS engine, picked by voice name (`supertonic-M1/M2/M3/F2/F4`) | Five voices chosen by ear (2026-10-19); all ten understood word for word by Whisper; CPU, ~0.6 s per sentence; sent at 22.05 kHz | Pocket TTS (streams from 0.08 s, voice cloning gated) — samples in the voices page |
@@ -184,7 +184,7 @@ Wiring decisions worth knowing:
 - **Windows** still serves the VLM with Ollama: `win/run.ps1` pins `VLM_BACKEND=ollama` until it can start llama-server. `win/install.ps1` downloads the Piper, Kokoro and Supertonic voices but not the GGUF.
 - **Code defaults differ from config.json** in places:
   - YOLO: `yolov8n` in code vs `yolo11s` in config.
-  - Whisper: `base`/CPU in code vs `small`/GPU from `run.sh`.
+  - Whisper: `base`/CPU in code vs `large-v3-turbo`/GPU from `run.sh`.
   - The launchers and config are what actually runs.
 - **Python dependencies are not locked.** They are `>=` floors with no lock file. Only `bun.lock` pins the frontend; mediamtx and the ThousandEyes image are unpinned too.
 - **Stale statements still in docs or comments:**
