@@ -164,9 +164,12 @@ $asrCompute = if ($env:ASR_COMPUTE_TYPE) { $env:ASR_COMPUTE_TYPE } else { 'int8'
 $vlmBackend = if ($env:VLM_BACKEND)      { $env:VLM_BACKEND }      else { 'ollama' }
 # Neural text-to-speech (Piper) default voice; override with TTS_VOICE=<name>.
 $ttsVoice   = if ($env:TTS_VOICE)        { $env:TTS_VOICE }        else { 'em_alex' }
+# Only this PC (the backend is iacore's one client, and iacore has no credential of its own);
+# IACORE_HOST=0.0.0.0 opens it for an iacore on another machine.
+$iacoreHost = if ($env:IACORE_HOST)      { $env:IACORE_HOST }      else { '127.0.0.1' }
 Info 'Starting iacore (:8001) ...'
 # Quote each `set` assignment so values with spaces don't break the cmd chain.
-$iacoreCmd = "title AI-VL iacore :8001 & set `"ASR_MODEL=$asrModel`" & set `"ASR_DEVICE=$asrDevice`" & set `"ASR_COMPUTE_TYPE=$asrCompute`" & set `"TTS_VOICE=$ttsVoice`" & set `"VLM_BACKEND=$vlmBackend`" & .venv\Scripts\python.exe -m uvicorn service:app --host 0.0.0.0 --port 8001"
+$iacoreCmd = "title AI-VL iacore :8001 & set `"ASR_MODEL=$asrModel`" & set `"ASR_DEVICE=$asrDevice`" & set `"ASR_COMPUTE_TYPE=$asrCompute`" & set `"TTS_VOICE=$ttsVoice`" & set `"VLM_BACKEND=$vlmBackend`" & .venv\Scripts\python.exe -m uvicorn service:app --host $iacoreHost --port 8001"
 Start-Process cmd.exe -ArgumentList '/k',$iacoreCmd -WorkingDirectory $coreDir
 
 # --- 7) backend HTTPS (:8443), serves the SPA + /api + /ws on one origin ------

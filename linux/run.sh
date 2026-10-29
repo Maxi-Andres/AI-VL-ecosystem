@@ -194,7 +194,11 @@ info 'Starting iacore (:8001) ...'
     # Neural text-to-speech. Default voice (Kokoro's Alex, picked 2026-10-19); override with
     # TTS_VOICE=<name> — any name /tts/voices lists. Runs on CPU.
     export TTS_VOICE="${TTS_VOICE:-em_alex}"
-    exec .venv/bin/python -m uvicorn service:app --host 0.0.0.0 --port 8001 --timeout-graceful-shutdown 5
+    # Only this PC: the backend is iacore's one client, and iacore has no credential of its own —
+    # on 0.0.0.0 anyone in the office used the VLM, Whisper and the robot's ear past Pilot's
+    # login. For an iacore on another machine: IACORE_HOST=0.0.0.0 (and a firewall in front).
+    exec .venv/bin/python -m uvicorn service:app --host "${IACORE_HOST:-127.0.0.1}" --port 8001 \
+        --timeout-graceful-shutdown 5
 ) > >(sed -u 's/^/[iacore]  /') 2>&1 &
 pids+=($!)
 

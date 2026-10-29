@@ -143,7 +143,9 @@ everyone signing in is set in Entra (Conditional Access / security defaults), no
 
 - **iacore (:8001), the executor (:8090), the camera bridge (:8091) and mediamtx** have no
   credential of their own. They must never be published: only Pilot's port goes through nginx.
-  Anyone already inside the office network can still reach them (ROADMAP PLATAFORMA §7.1).
+  Since 2026-10-29 `run.sh` binds iacore to 127.0.0.1 (its one client, the backend, is on the
+  same PC; `IACORE_HOST` opens it). The executor, the bridge and mediamtx can still be reached
+  by anyone inside the office network (ROADMAP PLATAFORMA §7.1).
 - **The H.264 (WebRTC) video.** Since 2026-10-28 the browser's offer goes through Pilot
   (`POST /api/whep/{robot}`, signed in, Pilot's certificate) instead of to mediamtx's own
   `:8889` and its self-signed certificate. The video itself still flows mediamtx → browser
