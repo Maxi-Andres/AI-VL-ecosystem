@@ -85,6 +85,9 @@ fi
 # too: llama-server offloads the --mmproj by default, which is the whole point of this
 # script.
 # -np 1: one request at a time, one KV cache — the 8 GB card is shared with YOLO.
+# --cache-ram: the prompt cache it keeps in host RAM. The default is 8 GiB, and over a few hours
+# it filled that: llama-server at 11.6 GB resident for a 2.7 GB model, the PC down to 5 GB free
+# (2026-10-30). The system prompt repeats, so 1 GiB keeps the reuse that matters (VLM_CACHE_RAM).
 exec "$BIN" --model "$MODEL" --mmproj "$MMPROJ" --alias "$ALIAS" \
     --host 127.0.0.1 --port "$PORT" -c "$CTX" -ngl "${VLM_NGL:-99}" -np 1 \
-    --flash-attn auto --no-webui --offline "${EXTRA[@]}"
+    --flash-attn auto --no-webui --offline --cache-ram "${VLM_CACHE_RAM:-1024}" "${EXTRA[@]}"
